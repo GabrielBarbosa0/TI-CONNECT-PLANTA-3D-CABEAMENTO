@@ -10,10 +10,14 @@ O predio modelado possui:
 
 - 1 pavimento terreo.
 - 3 pavimentos superiores.
-- Banheiro em todos os andares.
+- Banheiros masculino e feminino em todos os andares, incluindo o terreo.
 - Areas administrativas, tecnicas, operacionais e de convivencia.
 - Representacao visual do backbone vertical entre os andares.
 - Pontos de rede e cabos UTP distribuidos por setor.
+- Rede de visitantes separada da rede corporativa na recepcao.
+- Fachada principal posicionada na face estreita do lote, voltada para a R. Estela Mota.
+- Paredes internas alinhadas em blocos continuos para reduzir vaos entre ambientes.
+- Escada retangular interligando o terreo, primeiro, segundo e terceiro andar, com saida aberta para cada pavimento.
 
 ## 2. Objetivo do projeto
 
@@ -27,6 +31,7 @@ O sistema deve ajudar a demonstrar:
 - Como o backbone interliga os pavimentos.
 - Quais ambientes existem em cada andar.
 - Como a infraestrutura de rede atende as necessidades do predio.
+- Como a rede de clientes/visitantes fica isolada da rede interna.
 
 ## 3. Tecnologias utilizadas
 
@@ -114,22 +119,36 @@ Arquivo principal do projeto. Contem:
 
 ### Terreo
 
-O pavimento terreo representa a entrada e area de apoio do predio.
+O pavimento terreo representa a entrada e area de apoio do predio. A fachada principal fica na face estreita do lote, voltada para a R. Estela Mota, conforme a referencia do mapa.
+
+Na distribuicao atual do terreo, a area inferior representa uma entrada fisica de veiculos da R. Estela Mota para o estacionamento. Essa faixa deve permanecer livre, sem parede ou equipamento bloqueando a passagem. A recepcao fica na area frontal junto a fachada e possui uma porta voltada diretamente para a R. Estela Mota. Ao lado da recepcao ficam dois banheiros, um masculino e um feminino. A area posterior foi reservada para um estoque retangular maior, quase do mesmo porte da recepcao, avancando um pouco sobre a area do estacionamento sem bloquear o corredor de carros.
 
 Ambientes:
 
 - Estacionamento.
 - Estoque.
 - Recepcao.
-- Banheiro.
+- Entrada de veiculos da R. Estela Mota para o estacionamento.
+- Banheiro masculino.
+- Banheiro feminino.
+- Escada de acesso aos pavimentos superiores.
 
 Elementos de rede:
 
 - Rack do terreo.
 - Switch do terreo.
+- Firewall/roteador principal.
 - Ponto de acesso.
+- Ponto de acesso exclusivo para visitantes na recepcao.
 - Ponto de rede no estoque.
+- Cliente de exemplo conectado a rede de visitantes.
 - Ligacao com o backbone vertical.
+
+A escada foi posicionada na area posterior do terreo, sem bloquear a entrada de veiculos nem o estacionamento. A parede da escada possui abertura para acesso ao pavimento.
+
+Na recepcao, foi adicionada uma rede de visitantes para clientes que chegam ao predio. Essa rede e identificada como `TI-Connect-Visitantes` e deve ser separada da rede interna da empresa por meio de VLAN e regras de firewall.
+
+Essa separacao evita que dispositivos de visitantes tenham acesso aos servidores, computadores dos funcionarios, impressoras internas e outros recursos administrativos.
 
 ### Primeiro andar
 
@@ -139,7 +158,14 @@ Ambientes:
 
 - Sala de servidores.
 - Sala de suporte tecnico N3.
-- Banheiro.
+- Area de apoio tecnico.
+- Escada.
+- Banheiro masculino.
+- Banheiro feminino.
+
+No primeiro andar, a sala de servidores foi ampliada ate encostar na parede da escada, evitando uma divisoria inutil dentro da area tecnica. A escada possui saida aberta para o pavimento, sem parede bloqueando a circulacao. A sala de servidores possui uma porta propria voltada para a area do suporte N3. Os pontos N3 foram reposicionados de forma mais centralizada dentro da area de suporte, e uma parede parcial foi adicionada para separar uma area livre que podera ser definida posteriormente.
+
+Os pontos N3 usam um tronco de barramento visivel na planta, com derivacoes curtas para cada computador. Assim, os cabos nao convergem para um ponto solto sem equipamento representado.
 
 Elementos de rede:
 
@@ -159,7 +185,10 @@ O segundo andar e dedicado ao telemarketing.
 Ambientes:
 
 - Sala de telemarketing.
-- Banheiro.
+- Area de bancadas do telemarketing.
+- Escada.
+- Banheiro masculino.
+- Banheiro feminino.
 
 Elementos de rede:
 
@@ -169,6 +198,8 @@ Elementos de rede:
 - Ponto de acesso.
 - Cabos UTP conectando os computadores.
 - Ligacao com o backbone.
+
+No telemarketing, os computadores sao ligados por derivacoes curtas a um tronco de barramento visivel na planta. Esse tronco retorna para o switch do andar, evitando cabos convergindo para um ponto sem equipamento representado.
 
 ### Terceiro andar
 
@@ -181,7 +212,13 @@ Ambientes:
 - Sala de reuniao.
 - Area de setores.
 - Sala do chefe.
-- Banheiro.
+- Escada.
+- Banheiro masculino.
+- Banheiro feminino.
+
+No terceiro andar, a sala de reuniao foi deslocada para uma das pontas do pavimento e ficou maior para comportar mais pessoas. A sala do chefe ficou na ponta oposta e foi reduzida, pois nao precisa ocupar uma area tao grande quanto a sala de reuniao.
+
+Os pontos dos setores, incluindo suporte N2, infraestrutura, financeiro, RH e administrativo, foram centralizados na area de setores. A divisoria entre a area lateral e os setores foi aberta para melhorar a circulacao. A fiacao dos setores tambem usa um tronco de barramento visivel, com derivacoes para cada ponto.
 
 Setores representados:
 
@@ -222,7 +259,38 @@ Exemplos:
 
 Esse padrao facilita a identificacao dos equipamentos na planta e pode ser expandido no futuro para incluir portas de switch, patch panels e pontos de telecomunicacao.
 
-## 7. Camadas de visualizacao
+## 7. Segmentacao de rede
+
+O projeto considera a separacao logica da rede por VLANs. Essa organizacao melhora a seguranca, facilita o gerenciamento e permite controlar o acesso de cada grupo de dispositivos.
+
+Proposta inicial de VLANs:
+
+- `VLAN 10 - Corporativa`: computadores dos funcionarios e setores internos.
+- `VLAN 20 - Servidores`: servidor principal, servidor de backup e recursos do CPD.
+- `VLAN 30 - Visitantes`: clientes e convidados conectados na recepcao.
+- `VLAN 40 - Gerencia`: gerenciamento de switches, APs, firewall e demais equipamentos.
+
+### Rede de visitantes
+
+A rede de visitantes deve ser disponibilizada principalmente na recepcao e, futuramente, tambem pode ser ativada na sala de reuniao.
+
+Caracteristicas esperadas:
+
+- SSID sugerido: `TI-Connect-Visitantes`.
+- Acesso liberado apenas para internet.
+- Bloqueio de acesso a rede corporativa.
+- Bloqueio de acesso a servidores e dispositivos internos.
+- Possibilidade de limitar velocidade por usuario.
+- Senha separada da rede dos funcionarios.
+
+Na planta 3D, essa rede e representada por:
+
+- `FW-01`: firewall/roteador responsavel pelo controle de acesso.
+- `AP-VIS-01`: ponto de acesso da recepcao para visitantes.
+- `CLI-01`: dispositivo de exemplo de um cliente conectado.
+- Cabo em cor especifica para diferenciar a rede de visitantes.
+
+## 8. Camadas de visualizacao
 
 A interface permite ligar ou desligar camadas da planta.
 
@@ -234,7 +302,7 @@ Camadas disponiveis:
 
 Essa separacao ajuda na apresentacao, pois permite explicar a planta por partes.
 
-## 8. Funcionamento da navegacao
+## 9. Funcionamento da navegacao
 
 O usuario pode:
 
@@ -244,7 +312,7 @@ O usuario pode:
 - Visualizar todos os andares ao mesmo tempo.
 - Exportar uma imagem da planta para usar em slides ou relatorios.
 
-## 9. Criterios de aceitacao
+## 10. Criterios de aceitacao
 
 O projeto deve ser considerado funcional quando:
 
@@ -253,11 +321,15 @@ O projeto deve ser considerado funcional quando:
 - Todos os quatro pavimentos forem exibidos.
 - O usuario conseguir alternar entre os andares.
 - Os ambientes principais estiverem identificados.
+- Todos os andares possuirem banheiro masculino e feminino.
+- As paredes internas estiverem coladas/alinhadas sem vaos visuais desnecessarios.
 - Os equipamentos de rede estiverem visiveis.
 - Os cabos e backbone forem exibidos.
+- A rede de visitantes estiver representada na recepcao.
+- A documentacao indicar que a rede de visitantes deve ser isolada por VLAN e firewall.
 - A planta puder ser usada como apoio visual em apresentacao.
 
-## 10. Possiveis melhorias futuras
+## 11. Possiveis melhorias futuras
 
 Algumas melhorias que podem ser implementadas futuramente:
 
@@ -267,12 +339,14 @@ Algumas melhorias que podem ser implementadas futuramente:
 - Adicionar tabela de materiais e orcamento.
 - Representar patch panels e tomadas RJ45.
 - Adicionar legenda tecnica com normas de cabeamento.
+- Adicionar regras detalhadas de firewall entre VLANs.
+- Adicionar portal cativo para visitantes.
 - Permitir edicao visual da planta.
 - Gerar PDF com imagens e resumo tecnico.
 - Criar modo de apresentacao por andar.
 - Adicionar texturas e modelos 3D mais detalhados.
 
-## 11. Conclusao
+## 12. Conclusao
 
 O projeto apresenta uma maquete 3D interativa para demonstrar a infraestrutura de rede planejada para o predio da TI Connect.
 

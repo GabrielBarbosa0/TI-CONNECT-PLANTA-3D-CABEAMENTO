@@ -10,9 +10,11 @@
   --wood: #b77b49;
   --server: #4761a6;
   --switch: #138f72;
+  --firewall: #b8414b;
   --endpoint: #c97832;
   --ap: #7f579e;
   --copper: #e07a2f;
+  --guest: #18a8b8;
   --backbone: #2458d8;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -200,6 +202,10 @@ h2 {
   background: var(--switch);
 }
 
+.firewall {
+  background: var(--firewall);
+}
+
 .endpoint {
   background: var(--endpoint);
 }
@@ -210,6 +216,10 @@ h2 {
 
 .copper {
   background: var(--copper);
+}
+
+.guest {
+  background: var(--guest);
 }
 
 .backbone {
