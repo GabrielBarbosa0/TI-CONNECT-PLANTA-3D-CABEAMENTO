@@ -314,6 +314,7 @@ O usuario pode:
 - Selecionar um andar especifico.
 - Visualizar todos os andares ao mesmo tempo.
 - Exportar uma imagem da planta para usar em slides ou relatorios.
+- Escolher, no momento da exportacao, se a imagem deve conter cabos e barramentos, equipamentos e pontos, e/ou nomenclatura.
 
 ## 10. Criterios de aceitacao
 

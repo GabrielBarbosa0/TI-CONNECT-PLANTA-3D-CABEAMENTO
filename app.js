@@ -258,12 +258,186 @@ document.querySelectorAll("[data-layer]").forEach((input) => {
 });
 
 document.querySelector("#export-png").addEventListener("click", () => {
+  exportImage();
+});
+
+function exportImage() {
+  const previousVisibility = captureLayerVisibility();
+  const exportLayers = getExportLayerSettings();
+  applyLayerVisibility(exportLayers);
+
   renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+
+  const image = composeExportCanvas(exportLayers);
   const link = document.createElement("a");
   link.download = "ti-connect-planta-3d.png";
-  link.href = renderer.domElement.toDataURL("image/png");
+  link.href = image.toDataURL("image/png");
   link.click();
-});
+
+  restoreLayerVisibility(previousVisibility);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+
+function getExportLayerSettings() {
+  return Object.fromEntries(
+    Object.keys(layerGroups).map((key) => {
+      const input = document.querySelector(`[data-export-layer="${key}"]`);
+      return [key, input?.checked ?? true];
+    })
+  );
+}
+
+function captureLayerVisibility() {
+  return Object.fromEntries(
+    Object.entries(layerGroups).map(([key, group]) => [
+      key,
+      {
+        group: group.visible,
+        children: group.children.map((child) => child.visible)
+      }
+    ])
+  );
+}
+
+function restoreLayerVisibility(previousVisibility) {
+  Object.entries(previousVisibility).forEach(([key, state]) => {
+    const group = layerGroups[key];
+    group.visible = state.group;
+    group.children.forEach((child, index) => {
+      child.visible = state.children[index] ?? child.visible;
+    });
+  });
+}
+
+function applyLayerVisibility(layerSettings) {
+  const all = activeFloor === "all";
+  const selected = Number(activeFloor);
+
+  Object.entries(layerGroups).forEach(([key, group]) => {
+    const layerEnabled = layerSettings[key] ?? true;
+    group.visible = layerEnabled;
+
+    group.children.forEach((child) => {
+      const floor = child.userData.floor;
+      const floorVisible = all || floor === undefined || floor === selected;
+      child.visible = layerEnabled && floorVisible;
+    });
+  });
+}
+
+function composeExportCanvas(exportLayers) {
+  const source = renderer.domElement;
+  const image = document.createElement("canvas");
+  image.width = source.width;
+  image.height = source.height;
+
+  const context = image.getContext("2d");
+  context.drawImage(source, 0, 0);
+
+  if (exportLayers.labels) {
+    drawVisibleLabels(context, image);
+  }
+
+  return image;
+}
+
+function drawVisibleLabels(context, image) {
+  const sceneRect = renderer.domElement.getBoundingClientRect();
+  const scaleX = image.width / sceneRect.width;
+  const scaleY = image.height / sceneRect.height;
+
+  labelRenderer.domElement.querySelectorAll(".label").forEach((element) => {
+    const style = window.getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+
+    if (
+      style.display === "none" ||
+      style.visibility === "hidden" ||
+      Number(style.opacity) === 0 ||
+      rect.width === 0 ||
+      rect.height === 0
+    ) {
+      return;
+    }
+
+    const x = (rect.left - sceneRect.left) * scaleX;
+    const y = (rect.top - sceneRect.top) * scaleY;
+    const width = rect.width * scaleX;
+    const height = rect.height * scaleY;
+    const radius = 6 * scaleX;
+    const paddingX = 6 * scaleX;
+    const paddingY = 4 * scaleY;
+    const fontSize = 12 * scaleY;
+    const lineHeight = fontSize * 1.15;
+
+    context.save();
+    context.fillStyle = "rgba(255, 255, 255, 0.9)";
+    context.strokeStyle = "rgba(100, 111, 108, 0.28)";
+    context.lineWidth = Math.max(1, scaleX);
+    roundRect(context, x, y, width, height, radius);
+    context.fill();
+    context.stroke();
+
+    context.fillStyle = "#16201f";
+    context.font = `700 ${fontSize}px Inter, Arial, sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "top";
+
+    const lines = wrapLabelText(context, element.textContent ?? "", width - paddingX * 2);
+    const blockHeight = lines.length * lineHeight;
+    const textStartY = y + paddingY + Math.max(0, (height - paddingY * 2 - blockHeight) / 2);
+
+    lines.forEach((line, index) => {
+      context.fillText(line, x + width / 2, textStartY + index * lineHeight);
+    });
+
+    context.restore();
+  });
+}
+
+function wrapLabelText(context, text, maxWidth) {
+  return text
+    .split("\n")
+    .flatMap((line) => {
+      const words = line.split(/\s+/).filter(Boolean);
+      const lines = [];
+      let current = "";
+
+      words.forEach((word) => {
+        const next = current ? `${current} ${word}` : word;
+        if (context.measureText(next).width <= maxWidth || !current) {
+          current = next;
+          return;
+        }
+
+        lines.push(current);
+        current = word;
+      });
+
+      if (current) {
+        lines.push(current);
+      }
+
+      return lines.length ? lines : [line];
+    });
+}
+
+function roundRect(context, x, y, width, height, radius) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  context.beginPath();
+  context.moveTo(x + safeRadius, y);
+  context.lineTo(x + width - safeRadius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+  context.lineTo(x + width, y + height - safeRadius);
+  context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+  context.lineTo(x + safeRadius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+  context.lineTo(x, y + safeRadius);
+  context.quadraticCurveTo(x, y, x + safeRadius, y);
+  context.closePath();
+}
 
 function buildFloors() {
   floors.forEach((floor) => {
