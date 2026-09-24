@@ -232,6 +232,7 @@ const layerGroups = {
   devices: new THREE.Group(),
   labels: new THREE.Group()
 };
+let activeFloor = "all";
 
 scene.add(layerGroups.cables, layerGroups.devices, layerGroups.labels);
 addLights();
@@ -252,7 +253,7 @@ document.querySelectorAll(".floor-button").forEach((button) => {
 
 document.querySelectorAll("[data-layer]").forEach((input) => {
   input.addEventListener("change", () => {
-    layerGroups[input.dataset.layer].visible = input.checked;
+    syncLayerVisibility();
   });
 });
 
@@ -736,6 +737,7 @@ function addLights() {
 }
 
 function showFloor(value) {
+  activeFloor = value;
   const all = value === "all";
   const selected = Number(value);
 
@@ -743,12 +745,7 @@ function showFloor(value) {
     group.visible = all || id === selected;
   });
 
-  Object.values(layerGroups).forEach((group) => {
-    group.children.forEach((child) => {
-      const floor = child.userData.floor;
-      child.visible = all || floor === undefined || floor === selected;
-    });
-  });
+  syncLayerVisibility();
 
   if (all) {
     controls.target.set(0, FLOOR_HEIGHT * 1.4, 0);
@@ -758,6 +755,23 @@ function showFloor(value) {
     controls.target.set(0, y + 0.4, 0);
     camera.position.set(16, y + 10, 17);
   }
+}
+
+function syncLayerVisibility() {
+  const all = activeFloor === "all";
+  const selected = Number(activeFloor);
+
+  Object.entries(layerGroups).forEach(([key, group]) => {
+    const input = document.querySelector(`[data-layer="${key}"]`);
+    const layerEnabled = input?.checked ?? true;
+    group.visible = layerEnabled;
+
+    group.children.forEach((child) => {
+      const floor = child.userData.floor;
+      const floorVisible = all || floor === undefined || floor === selected;
+      child.visible = layerEnabled && floorVisible;
+    });
+  });
 }
 
 function resize() {
