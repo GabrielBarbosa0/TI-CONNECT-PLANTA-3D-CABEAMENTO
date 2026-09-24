@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TI Connect - Planta 3D de Cabeamento</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="panel" aria-label="Controles da planta">
+        <div class="brand">
+          <span class="brand-mark">TC</span>
+          <div>
+            <h1>TI Connect</h1>
+            <p>Planta 3D para cabeamento estruturado</p>
+          </div>
+        </div>
+
+        <section class="control-block">
+          <h2>Andares</h2>
+          <div class="floor-buttons" role="group" aria-label="Selecionar andar">
+            <button class="floor-button active" type="button" data-floor="all">Todos</button>
+            <button class="floor-button" type="button" data-floor="0">Térreo</button>
+            <button class="floor-button" type="button" data-floor="1">1º</button>
+            <button class="floor-button" type="button" data-floor="2">2º</button>
+            <button class="floor-button" type="button" data-floor="3">3º</button>
+          </div>
+        </section>
+
+        <section class="control-block">
+          <h2>Camadas</h2>
+          <label class="toggle-row">
+            <input type="checkbox" data-layer="cables" checked />
+            <span>Cabos e barramentos</span>
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" data-layer="devices" checked />
+            <span>Equipamentos e pontos</span>
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" data-layer="labels" checked />
+            <span>Nomenclatura</span>
+          </label>
+        </section>
+
+        <section class="control-block summary">
+          <h2>Resumo</h2>
+          <dl>
+            <div>
+              <dt>Pavimentos</dt>
+              <dd>4</dd>
+            </div>
+            <div>
+              <dt>Área-base</dt>
+              <dd>retangular</dd>
+            </div>
+            <div>
+              <dt>Backbone</dt>
+              <dd>shaft vertical</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="control-block">
+          <h2>Legenda</h2>
+          <ul class="legend">
+            <li><span class="swatch server"></span>Servidor / backup</li>
+            <li><span class="swatch switch"></span>Switch / rack</li>
+            <li><span class="swatch endpoint"></span>Computador / ponto</li>
+            <li><span class="swatch ap"></span>Ponto de acesso</li>
+            <li><span class="line copper"></span>Cabo UTP</li>
+            <li><span class="line backbone"></span>Backbone</li>
+          </ul>
+        </section>
+
+        <button id="export-png" class="primary-action" type="button">Baixar imagem da planta</button>
+      </aside>
+
+      <section class="viewer">
+        <div class="topbar">
+          <div>
+            <strong>R. Estela Mota, São Sebastião - Surubim</strong>
+            <span>Maquete conceitual baseada no lote retangular da TI Connect</span>
+          </div>
+          <div class="camera-hint">Arraste para girar, role para aproximar</div>
+        </div>
+        <div id="scene" aria-label="Visualização 3D da planta de cabeamento"></div>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
