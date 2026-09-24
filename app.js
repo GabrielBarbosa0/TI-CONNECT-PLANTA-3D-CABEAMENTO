@@ -26,6 +26,7 @@ const COLORS = {
   leisure: 0x74a86f,
   meeting: 0x8a70a8,
   office: 0xd2a14a,
+  archive: 0xa79670,
   stair: 0x96a2a8
 };
 
@@ -44,7 +45,10 @@ const floors = [
     ],
     doors: [
       { name: "Porta recepção", orientation: "vertical", line: 10.95, start: 0.65, end: 1.85 },
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false }
+      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
+      { name: "Acesso banheiro M", orientation: "vertical", line: 6.55, start: -0.35, end: 0.85, marker: false },
+      { name: "Acesso banheiro F", orientation: "vertical", line: 6.55, start: 2.25, end: 3.45, marker: false },
+      { name: "Acesso estoque", orientation: "horizontal", line: -1.1, start: 1.45, end: 2.65, marker: false }
     ],
     devices: [
       { type: "rack", name: "RACK-T", x: 3.55, z: 2.75 },
@@ -86,8 +90,11 @@ const floors = [
       { name: "Banheiro F 1", x: 8.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath }
     ],
     doors: [
-      { name: "Porta servidores", orientation: "horizontal", line: 1.85, start: -4.35, end: -3.2 },
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false }
+      { name: "Porta servidores", orientation: "horizontal", line: 1.85, start: -4.35, end: -3.2, marker: false },
+      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
+      { name: "Acesso apoio N3", orientation: "horizontal", line: 1.85, start: 0.8, end: 1.9, marker: false },
+      { name: "Acesso banheiro M", orientation: "horizontal", line: 1.85, start: 4.1, end: 5.3, marker: false },
+      { name: "Acesso banheiro F", orientation: "horizontal", line: 1.85, start: 8.1, end: 9.3, marker: false }
     ],
     customWalls: [
       { orientation: "vertical", line: -3.05, start: -4.25, end: 0.7 }
@@ -115,13 +122,16 @@ const floors = [
     name: "2º andar",
     rooms: [
       { name: "Telemarketing", x: 0, z: -1.2, w: 21.5, d: 6.1, color: COLORS.office },
-      { name: "Bancadas TMK", x: -6.65, z: 3.05, w: 8.2, d: 2.4, color: COLORS.office },
+      { name: "Bancadas Telemarketing", x: -6.65, z: 3.05, w: 8.2, d: 2.4, color: COLORS.office },
       { name: "Escada", x: -1.3, z: 3.05, w: 2.5, d: 2.4, color: COLORS.stair, stairs: true },
       { name: "Banheiro M 2", x: 4.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath },
       { name: "Banheiro F 2", x: 8.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath }
     ],
     doors: [
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false }
+      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
+      { name: "Porta bancadas", orientation: "horizontal", line: 1.85, start: -6.2, end: -5.0, marker: false },
+      { name: "Porta banheiro M", orientation: "horizontal", line: 1.85, start: 4.1, end: 5.3, marker: false },
+      { name: "Porta banheiro F", orientation: "horizontal", line: 1.85, start: 8.1, end: 9.3, marker: false }
     ],
     devices: [
       { type: "rack", name: "RACK-2", x: -8.4, z: 2.8 },
@@ -141,27 +151,35 @@ const floors = [
     id: 3,
     name: "3º andar",
     rooms: [
-      { name: "Reunião", x: -8.1, z: -1.2, w: 5.3, d: 6.1, color: COLORS.meeting },
+      { name: "Reunião", x: -8.1, z: -1.75, w: 5.3, d: 5.0, color: COLORS.meeting },
       { name: "Setores", x: -1.4, z: -1.2, w: 8.1, d: 6.1, color: COLORS.office },
-      { name: "Sala Chefe", x: 8.25, z: -1.2, w: 4.9, d: 6.1, color: COLORS.meeting },
+      { name: "Sala Chefe", x: 8.25, z: -1.75, w: 4.9, d: 5.0, color: COLORS.meeting },
       { name: "Descompressão", x: -8.125, z: 3.05, w: 5.25, d: 2.4, color: COLORS.leisure },
       { name: "Copa", x: -4.0, z: 3.05, w: 2.8, d: 2.4, color: COLORS.stock },
       { name: "Escada", x: -1.3, z: 3.05, w: 2.5, d: 2.4, color: COLORS.stair, stairs: true },
+      { name: "Arquivo RH", x: 1.975, z: 3.05, w: 4.05, d: 2.4, color: COLORS.archive },
       { name: "Banheiro M 3", x: 5.7, z: 3.05, w: 3.4, d: 2.4, color: COLORS.bath },
       { name: "Banheiro F 3", x: 9.05, z: 3.05, w: 3.3, d: 2.4, color: COLORS.bath }
     ],
     doors: [
       { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
-      { name: "Abertura setores", orientation: "vertical", line: -5.45, start: -4.25, end: 1.85, marker: false }
+      { name: "Porta reunião", orientation: "vertical", line: -5.45, start: -2.25, end: -1.05, marker: false },
+      { name: "Porta copa", orientation: "horizontal", line: 1.85, start: -4.65, end: -3.55, marker: false },
+      { name: "Porta descomp.", orientation: "horizontal", line: 1.85, start: -7.05, end: -5.85, marker: false },
+      { name: "Porta arquivo", orientation: "horizontal", line: 1.85, start: 2.05, end: 3.2, marker: false },
+      { name: "Porta banheiro M", orientation: "horizontal", line: 1.85, start: 5.05, end: 6.2, marker: false },
+      { name: "Porta banheiro F", orientation: "horizontal", line: 1.85, start: 8.1, end: 9.25, marker: false },
+      { name: "Porta chefe", orientation: "vertical", line: 5.8, start: -2.3, end: -1.1, marker: false }
     ],
     omitWalls: [
+      { orientation: "vertical", line: -5.45, start: 0.75, end: 1.85 },
       { orientation: "vertical", line: 2.65, start: -4.25, end: 1.85 }
     ],
     devices: [
       { type: "rack", name: "RACK-3", x: -9.0, z: -3.2 },
       { type: "switch", name: "SW-3-01", x: -8.2, z: -3.2 },
       { type: "ap", name: "AP-3-01", x: -5.9, z: 2.8 },
-      { type: "endpoint", name: "VG-01", x: -7.8, z: 1.4 },
+      { type: "endpoint", name: "VG-01", x: -7.8, z: 2.55 },
       { type: "endpoint", name: "REU-01", x: -8.2, z: -1.2 },
       { type: "endpoint", name: "CHF-01", x: 8.1, z: -2.5 },
       ...sectorDevices()
@@ -169,7 +187,7 @@ const floors = [
     cables: [
       { from: [-8.2, -3.2], to: [0.2, 0.0], type: "backbone" },
       { from: [-8.2, -3.2], to: [-5.9, 2.8], type: "copper" },
-      { from: [-8.2, -3.2], to: [-7.8, 1.4], type: "copper" },
+      { from: [-8.2, -3.2], to: [-7.8, 2.55], type: "copper" },
       { from: [-8.2, -3.2], to: [-8.2, -1.2], type: "copper" },
       { from: [-8.2, -3.2], to: [8.1, -2.5], type: "copper" },
       { from: [-8.2, -3.2], to: [-3.9, -0.95], type: "copper" },

@@ -121,7 +121,7 @@ Arquivo principal do projeto. Contem:
 
 O pavimento terreo representa a entrada e area de apoio do predio. A fachada principal fica na face estreita do lote, voltada para a R. Estela Mota, conforme a referencia do mapa.
 
-Na distribuicao atual do terreo, a area inferior representa uma entrada fisica de veiculos da R. Estela Mota para o estacionamento. Essa faixa deve permanecer livre, sem parede ou equipamento bloqueando a passagem. A recepcao fica na area frontal junto a fachada e possui uma porta voltada diretamente para a R. Estela Mota. Ao lado da recepcao ficam dois banheiros, um masculino e um feminino. A area posterior foi reservada para um estoque retangular maior, quase do mesmo porte da recepcao, avancando um pouco sobre a area do estacionamento sem bloquear o corredor de carros.
+Na distribuicao atual do terreo, a area inferior representa uma entrada fisica de veiculos da R. Estela Mota para o estacionamento. Essa faixa deve permanecer livre, sem parede ou equipamento bloqueando a passagem. A recepcao fica na area frontal junto a fachada e possui uma porta voltada diretamente para a R. Estela Mota. Ao lado da recepcao ficam dois banheiros, um masculino e um feminino, ambos com acesso aberto pela recepcao. A area posterior foi reservada para um estoque retangular maior, quase do mesmo porte da recepcao, avancando um pouco sobre a area do estacionamento sem bloquear o corredor de carros. O estoque possui uma abertura voltada para a entrada de veiculos, facilitando acesso operacional a partir do estacionamento.
 
 Ambientes:
 
@@ -185,7 +185,7 @@ O segundo andar e dedicado ao telemarketing.
 Ambientes:
 
 - Sala de telemarketing.
-- Area de bancadas do telemarketing.
+- Sala de bancadas do telemarketing.
 - Escada.
 - Banheiro masculino.
 - Banheiro feminino.
@@ -212,11 +212,14 @@ Ambientes:
 - Sala de reuniao.
 - Area de setores.
 - Sala do chefe.
+- Arquivo RH.
 - Escada.
 - Banheiro masculino.
 - Banheiro feminino.
 
-No terceiro andar, a sala de reuniao foi deslocada para uma das pontas do pavimento e ficou maior para comportar mais pessoas. A sala do chefe ficou na ponta oposta e foi reduzida, pois nao precisa ocupar uma area tao grande quanto a sala de reuniao.
+No terceiro andar, a sala de reuniao foi posicionada em uma das pontas do pavimento e a sala do chefe ficou na ponta oposta, ambas como ambientes fechados e com porta voltada para a area de circulacao/setores. A sala do chefe foi reduzida para liberar um corredor de acesso aos banheiros masculino e feminino. A area vazia entre a escada e os banheiros foi aproveitada como Arquivo RH, destinado ao armazenamento de documentacao e papeis administrativos.
+
+A copa possui uma porta voltada para os setores, facilitando o acesso a partir da area administrativa. A sala de reuniao tambem possui uma porta propria, permitindo acesso pelos setores ou pela circulacao proxima a descompressao.
 
 Os pontos dos setores, incluindo suporte N2, infraestrutura, financeiro, RH e administrativo, foram centralizados na area de setores. A divisoria entre a area lateral e os setores foi aberta para melhorar a circulacao. A fiacao dos setores tambem usa um tronco de barramento visivel, com derivacoes para cada ponto.
 
