@@ -13,6 +13,7 @@ O predio modelado possui:
 - Banheiros masculino e feminino em todos os andares, incluindo o terreo.
 - Areas administrativas, tecnicas, operacionais e de convivencia.
 - Representacao visual do backbone vertical entre os andares.
+- Switch de distribuicao/backbone em cada pavimento, identificado como `SW-BB-*`, para terminar o backbone antes da distribuicao local.
 - Pontos de rede e cabos UTP distribuidos por setor.
 - Rede de visitantes separada da rede corporativa na recepcao.
 - Fachada principal posicionada na face estreita do lote, voltada para a R. Estela Mota.
@@ -137,6 +138,7 @@ Elementos de rede:
 
 - Rack do terreo.
 - Switch do terreo.
+- Switch de distribuicao/backbone do terreo.
 - Firewall/roteador principal.
 - Ponto de acesso.
 - Ponto de acesso exclusivo para visitantes na recepcao.
@@ -173,6 +175,7 @@ Elementos de rede:
 - Servidor de backup.
 - Rack do CPD.
 - Switch do N3.
+- Switch de distribuicao/backbone do primeiro andar.
 - Computadores da equipe N3.
 - Ponto de acesso.
 - Cabos UTP para os pontos de trabalho.
@@ -194,6 +197,7 @@ Elementos de rede:
 
 - Rack do segundo andar.
 - Switch do telemarketing.
+- Switch de distribuicao/backbone do segundo andar.
 - Computadores organizados em barramento.
 - Ponto de acesso.
 - Cabos UTP conectando os computadores.
@@ -235,6 +239,7 @@ Elementos de rede:
 
 - Rack do terceiro andar.
 - Switch do terceiro andar.
+- Switch de distribuicao/backbone do terceiro andar.
 - Computadores dos setores.
 - Ponto de acesso.
 - Ponto de rede na sala de reuniao.
@@ -251,6 +256,10 @@ Exemplos:
 
 - `RACK-T`: rack do terreo.
 - `SW-T-01`: switch do terreo.
+- `SW-BB-T`: switch de distribuicao/backbone do terreo.
+- `SW-BB-1`: switch de distribuicao/backbone do primeiro andar.
+- `SW-BB-2`: switch de distribuicao/backbone do segundo andar.
+- `SW-BB-3`: switch de distribuicao/backbone do terceiro andar.
 - `RACK-CPD`: rack da sala de servidores.
 - `SRV-01`: servidor principal.
 - `BKP-01`: servidor de backup.
@@ -262,7 +271,25 @@ Exemplos:
 
 Esse padrao facilita a identificacao dos equipamentos na planta e pode ser expandido no futuro para incluir portas de switch, patch panels e pontos de telecomunicacao.
 
-## 7. Segmentacao de rede
+## 7. Backbone e distribuicao por andar
+
+O backbone vertical representa a ligacao principal entre os pavimentos. Por ser parte fixa da infraestrutura de cabeamento estruturado, ele nao e representado como um cabo ligado diretamente aos computadores ou aos pontos finais.
+
+Em cada pavimento, o backbone chega a um switch de distribuicao identificado como `SW-BB-*`. A partir desse switch, a rede e encaminhada para o switch de acesso local do andar, que entao atende computadores, pontos de acesso, servidores ou demais pontos de rede.
+
+Fluxo representado na planta:
+
+```text
+Firewall/roteador principal
+  -> switch local/core do terreo
+  -> SW-BB-T
+  -> backbone vertical/shaft
+  -> SW-BB-1 / SW-BB-2 / SW-BB-3
+  -> switches de acesso dos pavimentos
+  -> computadores, APs, servidores e pontos de rede
+```
+
+## 8. Segmentacao de rede
 
 O projeto considera a separacao logica da rede por VLANs. Essa organizacao melhora a seguranca, facilita o gerenciamento e permite controlar o acesso de cada grupo de dispositivos.
 
@@ -293,7 +320,7 @@ Na planta 3D, essa rede e representada por:
 - `CLI-01`: dispositivo de exemplo de um cliente conectado.
 - Cabo em cor especifica para diferenciar a rede de visitantes.
 
-## 8. Camadas de visualizacao
+## 9. Camadas de visualizacao
 
 A interface permite ligar ou desligar camadas da planta.
 
@@ -305,7 +332,7 @@ Camadas disponiveis:
 
 Essa separacao ajuda na apresentacao, pois permite explicar a planta por partes.
 
-## 9. Funcionamento da navegacao
+## 10. Funcionamento da navegacao
 
 O usuario pode:
 
@@ -316,7 +343,7 @@ O usuario pode:
 - Exportar uma imagem da planta para usar em slides ou relatorios.
 - Escolher, no momento da exportacao, se a imagem deve conter cabos e barramentos, equipamentos e pontos, e/ou nomenclatura.
 
-## 10. Criterios de aceitacao
+## 11. Criterios de aceitacao
 
 O projeto deve ser considerado funcional quando:
 
@@ -329,11 +356,12 @@ O projeto deve ser considerado funcional quando:
 - As paredes internas estiverem coladas/alinhadas sem vaos visuais desnecessarios.
 - Os equipamentos de rede estiverem visiveis.
 - Os cabos e backbone forem exibidos.
+- O backbone estiver terminado em switches de distribuicao por pavimento antes da distribuicao local.
 - A rede de visitantes estiver representada na recepcao.
 - A documentacao indicar que a rede de visitantes deve ser isolada por VLAN e firewall.
 - A planta puder ser usada como apoio visual em apresentacao.
 
-## 11. Possiveis melhorias futuras
+## 12. Possiveis melhorias futuras
 
 Algumas melhorias que podem ser implementadas futuramente:
 
@@ -350,7 +378,7 @@ Algumas melhorias que podem ser implementadas futuramente:
 - Criar modo de apresentacao por andar.
 - Adicionar texturas e modelos 3D mais detalhados.
 
-## 12. Conclusao
+## 13. Conclusao
 
 O projeto apresenta uma maquete 3D interativa para demonstrar a infraestrutura de rede planejada para o predio da TI Connect.
 

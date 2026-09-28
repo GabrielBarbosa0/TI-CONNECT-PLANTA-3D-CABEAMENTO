@@ -53,6 +53,7 @@ const floors = [
     devices: [
       { type: "rack", name: "RACK-T", x: 3.55, z: 2.75 },
       { type: "switch", name: "SW-T-01", x: 2.15, z: 2.2 },
+      { type: "switch", name: "SW-BB-T", x: 0.75, z: 0.35 },
       { type: "firewall", name: "FW-01", x: 0.65, z: 2.75 },
       { type: "ap", name: "AP-CORP-T", x: -3.6, z: -1.7 },
       { type: "guestAp", name: "AP-VIS-01", x: 9.25, z: 1.0 },
@@ -62,11 +63,12 @@ const floors = [
     cables: [
       { from: [0.65, 2.75], to: [2.15, 2.2], type: "copper" },
       { from: [2.15, 2.2], to: [3.55, 2.75], type: "copper" },
+      { from: [2.15, 2.2], to: [0.75, 0.35], type: "copper" },
       { from: [2.15, 2.2], to: [3.65, 0.0], type: "copper" },
       { from: [2.15, 2.2], to: [-3.6, -1.7], type: "copper" },
       { from: [0.65, 2.75], to: [9.25, 1.0], type: "guest" },
       { from: [9.25, 1.0], to: [10.2, 1.9], type: "guest" },
-      { from: [2.15, 2.2], to: [0.2, 0.0], type: "backbone" }
+      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" }
     ],
     zones: [
       {
@@ -104,6 +106,7 @@ const floors = [
       { type: "server", name: "BKP-01", x: -6.3, z: 2.4 },
       { type: "rack", name: "RACK-CPD", x: -4.7, z: 2.4 },
       { type: "switch", name: "SW-N3-01", x: -3.9, z: 2.4 },
+      { type: "switch", name: "SW-BB-1", x: 0.75, z: 0.35 },
       { type: "ap", name: "AP-1-01", x: 2.2, z: -2.6 },
       ...namedDevices("N3", n3Points())
     ],
@@ -111,7 +114,8 @@ const floors = [
       { from: [-3.9, 2.4], to: [-8.2, 2.4], type: "copper" },
       { from: [-3.9, 2.4], to: [-6.3, 2.4], type: "copper" },
       { from: [-3.9, 2.4], to: [2.2, -2.6], type: "copper" },
-      { from: [-3.9, 2.4], to: [0.2, 0.0], type: "backbone" },
+      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" },
+      { from: [0.75, 0.35], to: [-3.9, 2.4], type: "copper" },
       { from: [-3.9, 2.4], to: [0.8, -0.85], type: "copper" },
       { from: [0.8, -0.85], to: [4.3, -0.85], type: "copper", bus: true },
       ...dropCablesToBus(n3Points(), -0.85)
@@ -136,11 +140,13 @@ const floors = [
     devices: [
       { type: "rack", name: "RACK-2", x: -8.4, z: 2.8 },
       { type: "switch", name: "SW-TMK-01", x: -7.6, z: 2.8 },
+      { type: "switch", name: "SW-BB-2", x: 0.75, z: 0.35 },
       { type: "ap", name: "AP-2-01", x: 4.0, z: 0.8 },
       ...gridDevices("TMK", 14, -5.4, -2.4, 1.85, 1.35)
     ],
     cables: [
-      { from: [-7.6, 2.8], to: [0.2, 0.0], type: "backbone" },
+      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" },
+      { from: [0.75, 0.35], to: [-7.6, 2.8], type: "copper" },
       { from: [-7.6, 2.8], to: [4.0, 0.8], type: "copper" },
       { from: [-7.6, 2.8], to: [-5.6, -0.8], type: "copper" },
       { from: [-5.6, -0.8], to: [6.2, -0.8], type: "copper", bus: true },
@@ -178,6 +184,7 @@ const floors = [
     devices: [
       { type: "rack", name: "RACK-3", x: -9.0, z: -3.2 },
       { type: "switch", name: "SW-3-01", x: -8.2, z: -3.2 },
+      { type: "switch", name: "SW-BB-3", x: 0.75, z: 0.35 },
       { type: "ap", name: "AP-3-01", x: -5.9, z: 2.8 },
       { type: "endpoint", name: "VG-01", x: -7.8, z: 2.55 },
       { type: "endpoint", name: "REU-01", x: -8.2, z: -1.2 },
@@ -185,7 +192,8 @@ const floors = [
       ...sectorDevices()
     ],
     cables: [
-      { from: [-8.2, -3.2], to: [0.2, 0.0], type: "backbone" },
+      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" },
+      { from: [0.75, 0.35], to: [-8.2, -3.2], type: "copper" },
       { from: [-8.2, -3.2], to: [-5.9, 2.8], type: "copper" },
       { from: [-8.2, -3.2], to: [-7.8, 2.55], type: "copper" },
       { from: [-8.2, -3.2], to: [-8.2, -1.2], type: "copper" },
