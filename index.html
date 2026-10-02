@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TI Connect - Planta 3D de Cabeamento</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
     <script type="importmap">
       {
         "imports": {
@@ -28,11 +28,11 @@
         <section class="control-block">
           <h2>Andares</h2>
           <div class="floor-buttons" role="group" aria-label="Selecionar andar">
-            <button class="floor-button active" type="button" data-floor="all">Todos</button>
-            <button class="floor-button" type="button" data-floor="0">Térreo</button>
-            <button class="floor-button" type="button" data-floor="1">1º</button>
-            <button class="floor-button" type="button" data-floor="2">2º</button>
-            <button class="floor-button" type="button" data-floor="3">3º</button>
+            <button class="floor-button active" type="button" data-floor="all" aria-pressed="true">Todos</button>
+            <button class="floor-button" type="button" data-floor="0" aria-pressed="false">Térreo</button>
+            <button class="floor-button" type="button" data-floor="1" aria-pressed="false">1º</button>
+            <button class="floor-button" type="button" data-floor="2" aria-pressed="false">2º</button>
+            <button class="floor-button" type="button" data-floor="3" aria-pressed="false">3º</button>
           </div>
         </section>
 
@@ -90,14 +90,34 @@
           <h2>Legenda</h2>
           <ul class="legend">
             <li><span class="swatch server"></span>Servidor / backup</li>
-            <li><span class="swatch switch"></span>Switch / rack</li>
+            <li><span class="swatch rack"></span>Rack</li>
+            <li><span class="swatch switch"></span>Switch</li>
             <li><span class="swatch firewall"></span>Firewall / roteador</li>
             <li><span class="swatch endpoint"></span>Computador / ponto</li>
             <li><span class="swatch ap"></span>Ponto de acesso</li>
-            <li><span class="line copper"></span>Cabo UTP</li>
+            <li><span class="line copper"></span>Cabo UTP (trajeto esquemático)</li>
             <li><span class="line guest"></span>Rede visitantes</li>
             <li><span class="line backbone"></span>Backbone</li>
           </ul>
+        </section>
+
+        <section class="control-block glossary">
+          <h2>Siglas da planta</h2>
+          <dl>
+            <div><dt>RACK</dt><dd>Armário de equipamentos de rede</dd></div>
+            <div><dt>SW</dt><dd>Switch de rede</dd></div>
+            <div><dt>BB</dt><dd>Backbone / distribuição entre andares</dd></div>
+            <div><dt>FW</dt><dd>Firewall e roteador principal</dd></div>
+            <div><dt>AP</dt><dd>Ponto de acesso Wi-Fi</dd></div>
+            <div><dt>SRV</dt><dd>Servidor principal</dd></div>
+            <div><dt>BKP</dt><dd>Servidor de backup</dd></div>
+            <div><dt>CLI / PT</dt><dd>Cliente visitante / ponto de rede</dd></div>
+            <div><dt>CPD</dt><dd>Centro de processamento de dados</dd></div>
+          </dl>
+          <details>
+            <summary>Siglas dos setores e redes</summary>
+            <p>N2/N3: níveis de suporte; TMK: telemarketing; INF: infraestrutura; FIN: financeiro; RH: recursos humanos; ADM: administração; VG: videogame; REU: reunião; CHF: sala do chefe; CORP: corporativa; VIS: visitantes; SSID: nome da rede Wi-Fi; VLAN: rede local virtual; UTP: cabo de pares trançados sem blindagem.</p>
+          </details>
         </section>
 
         <button id="export-png" class="primary-action" type="button">Baixar imagem da planta</button>
@@ -112,9 +132,10 @@
           <div class="camera-hint">Arraste para girar, role para aproximar</div>
         </div>
         <div id="scene" aria-label="Visualização 3D da planta de cabeamento"></div>
+        <p class="viewer-note">Selecione um pavimento para ver ambientes e pontos individuais. Rotas de cabos indicativas.</p>
       </section>
     </main>
 
-    <script type="module" src="./app.js"></script>
+    <script type="module" src="./app.js?v=5"></script>
   </body>
 </html>
