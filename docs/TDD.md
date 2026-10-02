@@ -332,6 +332,12 @@ Camadas disponiveis:
 
 Essa separacao ajuda na apresentacao, pois permite explicar a planta por partes.
 
+Na vista de todos os andares, a nomenclatura prioriza os pavimentos e equipamentos de rede. Ao selecionar um andar, os nomes de ambientes e pontos finais aparecem com menor destaque. Etiquetas proximas sao reposicionadas ou ocultadas para evitar sobreposicao; aproximar a camera facilita a leitura dos pontos densos.
+
+Racks, switches, firewall/roteador, servidores, pontos de acesso e estacoes possuem formas 3D distintas. Os cabos sao desenhados em segmentos ortogonais, com barramentos mais espessos. Esses trajetos sao esquematicos e nao definem eletrodutos, alturas de instalacao ou metragem executiva.
+
+O painel inclui a descricao das siglas usadas nos nomes dos aparelhos e setores.
+
 ## 10. Funcionamento da navegacao
 
 O usuario pode:
@@ -383,3 +389,8 @@ Algumas melhorias que podem ser implementadas futuramente:
 O projeto apresenta uma maquete 3D interativa para demonstrar a infraestrutura de rede planejada para o predio da TI Connect.
 
 Mesmo sendo uma representacao conceitual, a planta permite visualizar de forma clara a divisao dos ambientes, a localizacao dos equipamentos, a distribuicao dos computadores e o caminho geral do cabeamento estruturado entre os pavimentos.
+
+## 14. Referencias anexadas
+
+- `docs/referencias/Projeto de Cabeamento Estruturado - Entrega 1 (1).pdf`: distribuicao original e quantitativos de equipamentos e cabos.
+- `docs/referencias/orcamento_cabeamento_ti_connect.xlsx`: estimativa de materiais. O proprio arquivo identifica a fibra optica, a topologia dos enlaces e alguns componentes como hipoteses de orcamento, sujeitas a verificacao antes da compra.

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CSS2DObject, CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
+import { routeCable } from "./model-helpers.mjs";
 
 const FLOOR_HEIGHT = 3.4;
 const WALL_HEIGHT = 0.52;
@@ -210,7 +211,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f2ec);
 
 const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-camera.position.set(18, 18, 22);
+camera.position.set(27, 24, 29);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -232,7 +233,7 @@ controls.enableDamping = true;
 controls.target.set(0, FLOOR_HEIGHT * 1.4, 0);
 controls.maxPolarAngle = Math.PI * 0.48;
 controls.minDistance = 12;
-controls.maxDistance = 54;
+controls.maxDistance = 72;
 
 const floorGroups = new Map();
 const layerGroups = {
@@ -241,6 +242,7 @@ const layerGroups = {
   labels: new THREE.Group()
 };
 let activeFloor = "all";
+const labelItems = [];
 
 scene.add(layerGroups.cables, layerGroups.devices, layerGroups.labels);
 addLights();
@@ -253,8 +255,12 @@ window.addEventListener("resize", resize);
 
 document.querySelectorAll(".floor-button").forEach((button) => {
   button.addEventListener("click", () => {
-    document.querySelectorAll(".floor-button").forEach((item) => item.classList.remove("active"));
+    document.querySelectorAll(".floor-button").forEach((item) => {
+      item.classList.remove("active");
+      item.setAttribute("aria-pressed", "false");
+    });
     button.classList.add("active");
+    button.setAttribute("aria-pressed", "true");
     showFloor(button.dataset.floor);
   });
 });
@@ -276,6 +282,7 @@ function exportImage() {
 
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
+  refreshLabelVisibility(exportLayers.labels);
 
   const image = composeExportCanvas(exportLayers);
   const link = document.createElement("a");
@@ -286,6 +293,7 @@ function exportImage() {
   restoreLayerVisibility(previousVisibility);
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
+  refreshLabelVisibility();
 }
 
 function getExportLayerSettings() {
@@ -374,22 +382,22 @@ function drawVisibleLabels(context, image) {
     const y = (rect.top - sceneRect.top) * scaleY;
     const width = rect.width * scaleX;
     const height = rect.height * scaleY;
-    const radius = 6 * scaleX;
-    const paddingX = 6 * scaleX;
-    const paddingY = 4 * scaleY;
-    const fontSize = 12 * scaleY;
-    const lineHeight = fontSize * 1.15;
+    const radius = parseFloat(style.borderRadius) * scaleX || 5 * scaleX;
+    const paddingX = parseFloat(style.paddingLeft) * scaleX || 4 * scaleX;
+    const paddingY = parseFloat(style.paddingTop) * scaleY || 3 * scaleY;
+    const fontSize = parseFloat(style.fontSize) * scaleY || 12 * scaleY;
+    const lineHeight = parseFloat(style.lineHeight) * scaleY || fontSize * 1.15;
 
     context.save();
-    context.fillStyle = "rgba(255, 255, 255, 0.9)";
-    context.strokeStyle = "rgba(100, 111, 108, 0.28)";
+    context.fillStyle = style.backgroundColor;
+    context.strokeStyle = style.borderColor;
     context.lineWidth = Math.max(1, scaleX);
     roundRect(context, x, y, width, height, radius);
     context.fill();
     context.stroke();
 
-    context.fillStyle = "#16201f";
-    context.font = `700 ${fontSize}px Inter, Arial, sans-serif`;
+    context.fillStyle = style.color;
+    context.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
     context.textAlign = "center";
     context.textBaseline = "top";
 
@@ -543,9 +551,9 @@ function addRoom(group, room, y, floorId) {
     addLabel(
       room.name,
       room.x,
-      y + 0.72,
+      y + 0.46,
       room.z,
-      room.name.length > 14 ? "room-label" : "",
+      "room-label",
       floorId
     );
   }
@@ -758,10 +766,10 @@ function addDoorMarker(group, door, y, floorId) {
 
   if (door.orientation === "horizontal") {
     marker.position.set(door.start + width / 2, y + 0.28, door.line);
-    addLabel(door.name, door.start + width / 2, y + 0.72, door.line - 0.25, "device-label", floorId);
+    addLabel(door.name, door.start + width / 2, y + 0.72, door.line - 0.25, "context-label", floorId);
   } else {
     marker.position.set(door.line, y + 0.28, door.start + width / 2);
-    addLabel(door.name, door.line - 0.25, y + 0.72, door.start + width / 2, "device-label", floorId);
+    addLabel(door.name, door.line - 0.25, y + 0.72, door.start + width / 2, "context-label", floorId);
   }
 
   group.add(marker);
@@ -792,39 +800,92 @@ function addZone(group, zone, y, floorId) {
   ring.position.set(zone.x, y + 0.26, zone.z);
   group.add(ring);
 
-  addLabel(zone.name, zone.x, y + 0.92, zone.z + zone.radius * 0.52, "device-label", floorId);
+  addLabel(zone.name, zone.x, y + 0.92, zone.z + zone.radius * 0.52, "zone-label", floorId);
 }
 
 function addDevice(device, y, floorId) {
   const group = new THREE.Group();
   group.userData.floor = floorId;
+  group.position.set(device.x, y, device.z);
   layerGroups.devices.add(group);
 
-  const color = COLORS[device.type] || COLORS.endpoint;
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.45 });
-  let mesh;
+  const accent = COLORS[device.type] || COLORS.endpoint;
+  const caseMat = new THREE.MeshStandardMaterial({ color: 0x25343c, metalness: 0.38, roughness: 0.48 });
+  const faceMat = new THREE.MeshStandardMaterial({ color: accent, metalness: 0.18, roughness: 0.48 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x111c23, roughness: 0.55 });
+  const metalMat = new THREE.MeshStandardMaterial({ color: 0xb8c9ca, metalness: 0.6, roughness: 0.36 });
+  const lightMat = new THREE.MeshStandardMaterial({ color: 0xb7f5d7, emissive: 0x47bd91, emissiveIntensity: 0.55 });
+  const isInfrastructure = device.type !== "endpoint";
+  const plinth = new THREE.Mesh(
+    new THREE.CylinderGeometry(isInfrastructure ? 0.48 : 0.30, isInfrastructure ? 0.48 : 0.30, 0.035, 28),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82 })
+  );
+  plinth.position.y = 0.235;
+  plinth.receiveShadow = true;
+  group.add(plinth);
 
-  if (device.type === "ap" || device.type === "guestAp") {
-    mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.16, 24), mat);
-    mesh.position.set(device.x, y + 0.95, device.z);
-  } else if (device.type === "firewall") {
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.38, 0.5), mat);
-    mesh.position.set(device.x, y + 0.5, device.z);
+  if (device.type === "rack") {
+    addDeviceBox(group, 0.68, 1.04, 0.58, 0, 0.78, 0, caseMat);
+    addDeviceBox(group, 0.54, 0.89, 0.025, 0, 0.78, 0.305, darkMat);
+    [-0.30, 0.30].forEach((x) => addDeviceBox(group, 0.035, 0.94, 0.04, x, 0.78, 0.32, metalMat));
+    [0.48, 0.70, 0.92, 1.14].forEach((height, index) => {
+      addDeviceBox(group, 0.48, 0.14, 0.035, 0, height, 0.33, index % 2 ? faceMat : caseMat);
+      addDeviceBox(group, 0.05, 0.035, 0.016, 0.18, height, 0.355, lightMat);
+    });
+  } else if (device.type === "switch" || device.type === "firewall") {
+    const width = device.type === "switch" ? 0.72 : 0.68;
+    addDeviceBox(group, width, 0.24, 0.50, 0, 0.42, 0, caseMat);
+    addDeviceBox(group, width - 0.07, 0.15, 0.025, 0, 0.43, 0.263, faceMat);
+    for (let index = 0; index < (device.type === "switch" ? 6 : 4); index += 1) {
+      addDeviceBox(group, 0.064, 0.045, 0.018, -0.22 + index * 0.085, 0.43, 0.282, darkMat);
+    }
+    addDeviceBox(group, 0.032, 0.032, 0.02, 0.27, 0.44, 0.285, lightMat);
   } else if (device.type === "server") {
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.95, 0.55), mat);
-    mesh.position.set(device.x, y + 0.75, device.z);
-  } else if (device.type === "rack" || device.type === "switch") {
-    const h = device.type === "rack" ? 0.9 : 0.32;
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.62, h, 0.46), mat);
-    mesh.position.set(device.x, y + 0.35 + h / 2, device.z);
+    addDeviceBox(group, 0.56, 0.92, 0.54, 0, 0.70, 0, caseMat);
+    addDeviceBox(group, 0.48, 0.82, 0.026, 0, 0.70, 0.286, faceMat);
+    [0.49, 0.61, 0.73, 0.85, 0.97].forEach((height) =>
+      addDeviceBox(group, 0.37, 0.035, 0.018, 0, height, 0.306, darkMat)
+    );
+    addDeviceBox(group, 0.04, 0.04, 0.019, 0.18, 1.02, 0.31, lightMat);
+  } else if (device.type === "ap" || device.type === "guestAp") {
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.34, 0.11, 32), faceMat);
+    disc.position.y = 0.94;
+    disc.castShadow = true;
+    group.add(disc);
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.018, 32), metalMat);
+    cap.position.y = 1.005;
+    group.add(cap);
+    const led = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), lightMat);
+    led.position.set(0, 1.025, 0);
+    group.add(led);
+  } else if (device.name.startsWith("PT-")) {
+    addDeviceBox(group, 0.32, 0.28, 0.10, 0, 0.42, 0, faceMat);
+    addDeviceBox(group, 0.11, 0.07, 0.015, 0, 0.43, 0.061, darkMat);
+  } else if (device.name.startsWith("CLI-")) {
+    addDeviceBox(group, 0.39, 0.035, 0.28, 0, 0.35, 0, caseMat);
+    addDeviceBox(group, 0.39, 0.27, 0.035, 0, 0.50, -0.11, faceMat);
+    addDeviceBox(group, 0.33, 0.20, 0.014, 0, 0.50, -0.088, darkMat);
   } else {
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.22, 0.34), mat);
-    mesh.position.set(device.x, y + 0.36, device.z);
+    addDeviceBox(group, 0.25, 0.12, 0.27, 0, 0.34, 0, caseMat);
+    addDeviceBox(group, 0.035, 0.18, 0.035, 0, 0.51, 0, metalMat);
+    addDeviceBox(group, 0.44, 0.30, 0.055, 0, 0.64, 0, caseMat);
+    addDeviceBox(group, 0.37, 0.23, 0.015, 0, 0.64, 0.036, faceMat);
   }
 
+  const labelClass = isInfrastructure ? "device-label" : "endpoint-label";
+  const labelHeight = device.type === "rack" ? 1.55
+    : device.type === "switch" && !device.name.includes("BB") ? 1.35
+    : device.name.startsWith("BKP") ? 1.28
+    : device.type === "ap" || device.type === "guestAp" ? 1.28 : 1.02;
+  addLabel(device.name, device.x, y + labelHeight, device.z, labelClass, floorId);
+}
+
+function addDeviceBox(group, width, height, depth, x, y, z, material) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material);
+  mesh.position.set(x, y, z);
   mesh.castShadow = true;
   group.add(mesh);
-  addLabel(device.name, device.x, y + 1.18, device.z, "device-label", floorId);
+  return mesh;
 }
 
 function addCable(cable, y, floorId) {
@@ -834,43 +895,55 @@ function addCable(cable, y, floorId) {
     copper: COLORS.copper
   };
   const color = cableColors[cable.type] || COLORS.copper;
-  const points = [
-    new THREE.Vector3(cable.from[0], y + 0.36, cable.from[1]),
-    new THREE.Vector3(cable.to[0], y + 0.36, cable.to[1])
-  ];
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  const material = new THREE.LineBasicMaterial({ color, linewidth: cable.bus ? 4 : 2 });
-  const line = new THREE.Line(geometry, material);
-  line.userData.floor = floorId;
-  layerGroups.cables.add(line);
+  const path = routeCable(cable.from, cable.to, { via: cable.via });
+  const group = new THREE.Group();
+  group.userData.floor = floorId;
+  const radius = cable.bus ? 0.055 : cable.type === "backbone" ? 0.048 : 0.028;
+  const material = new THREE.MeshStandardMaterial({ color, metalness: 0.12, roughness: 0.43 });
+  const points = path.map(([x, z]) => new THREE.Vector3(x, y + 0.30, z));
+  for (let index = 1; index < points.length; index += 1) {
+    const start = points[index - 1];
+    const end = points[index];
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const segment = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, direction.length(), 8), material);
+    segment.position.copy(start).add(end).multiplyScalar(0.5);
+    segment.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
+    group.add(segment);
+  }
+  points.slice(1, -1).forEach((point) => {
+    const join = new THREE.Mesh(new THREE.SphereGeometry(radius, 8, 6), material);
+    join.position.copy(point);
+    group.add(join);
+  });
+  layerGroups.cables.add(group);
 }
 
 function addBackboneShaft() {
-  const geometry = new THREE.BufferGeometry().setFromPoints([
-    new THREE.Vector3(0.2, 0.4, 0),
-    new THREE.Vector3(0.2, FLOOR_HEIGHT * 3 + 1.2, 0)
-  ]);
-  const line = new THREE.Line(
-    geometry,
-    new THREE.LineBasicMaterial({ color: COLORS.backbone, linewidth: 5 })
-  );
-  layerGroups.cables.add(line);
-
+  const group = new THREE.Group();
+  group.userData.floor = -1;
   const shaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.18, 0.18, FLOOR_HEIGHT * 3 + 0.8, 18),
+    new THREE.CylinderGeometry(0.085, 0.085, FLOOR_HEIGHT * 3 + 0.8, 16),
+    new THREE.MeshStandardMaterial({ color: COLORS.backbone, metalness: 0.28, roughness: 0.4 })
+  );
+  shaft.position.set(0.2, FLOOR_HEIGHT * 1.5 + 0.3, 0);
+  group.add(shaft);
+  const sleeve = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.21, 0.21, FLOOR_HEIGHT * 3 + 0.8, 18),
     new THREE.MeshStandardMaterial({
       color: COLORS.backbone,
       transparent: true,
-      opacity: 0.26
+      opacity: 0.12,
+      depthWrite: false
     })
   );
-  shaft.position.set(0.2, FLOOR_HEIGHT * 1.5 + 0.3, 0);
-  layerGroups.cables.add(shaft);
-  addLabel("SHAFT / BACKBONE", 0.2, FLOOR_HEIGHT * 3 + 1.45, 0, "device-label");
+  sleeve.position.copy(shaft.position);
+  group.add(sleeve);
+  layerGroups.cables.add(group);
+  addLabel("SHAFT / BACKBONE", 0.2, FLOOR_HEIGHT * 3 + 1.45, 0, "shaft-label", -1);
 }
 
 function addFloorLabel(text, y, floorId) {
-  addLabel(text, -10.8, y + 1.25, -5.2, "floor-label", floorId);
+  addLabel(text, -10.1, y + 0.48, 5.05, "floor-label", floorId);
 }
 
 function addLabel(text, x, y, z, extraClass = "", floorId = null) {
@@ -883,7 +956,54 @@ function addLabel(text, x, y, z, extraClass = "", floorId = null) {
     label.userData.floor = floorId;
   }
   layerGroups.labels.add(label);
+  labelItems.push({ label, element, kind: extraClass });
   return label;
+}
+
+function refreshLabelVisibility(override = null) {
+  const labelsEnabled = override ?? (document.querySelector('[data-layer="labels"]')?.checked ?? true);
+  const candidates = labelItems.filter(({ label, kind }) => {
+    const floor = label.userData.floor;
+    const onFloor = activeFloor === "all" || floor === undefined || floor === Number(activeFloor);
+    const quietInOverview = activeFloor === "all" && ["room-label", "endpoint-label", "context-label", "zone-label"].includes(kind);
+    return labelsEnabled && onFloor && !quietInOverview && label.visible;
+  });
+
+  const priority = { "floor-label": 8, "device-label": 5, "shaft-label": 4, "endpoint-label": 2, "zone-label": 1, "room-label": 0, "context-label": 0, "street-label": 0 };
+  const score = ({ kind, element }) => (priority[kind] ?? 0)
+    + (kind === "device-label" && element.textContent.startsWith("RACK") ? 2 : 0)
+    + (kind === "device-label" && element.textContent.startsWith("SW") ? 1 : 0);
+  candidates.sort((a, b) => score(b) - score(a));
+
+  const bounds = container.getBoundingClientRect();
+  const topbar = document.querySelector(".topbar").getBoundingClientRect();
+  const occupied = [];
+  const shown = new Set();
+  for (const { element, kind } of candidates) {
+    const offsets = kind === "device-label"
+      ? [[0, 0], [0, -30], [30, 0], [-30, 0], [30, -30], [-30, -30], [0, -60], [60, -30], [-60, -30], [30, -60], [-30, -60], [60, -60], [-60, -60], [0, -90]]
+      : kind === "endpoint-label" ? [[0, 0], [0, -22], [20, 0], [-20, 0]] : [[0, 0]];
+    for (const [dx, dy] of offsets) {
+      const marginTop = `${dy}px`;
+      const marginLeft = `${dx}px`;
+      if (element.style.marginTop !== marginTop) element.style.marginTop = marginTop;
+      if (element.style.marginLeft !== marginLeft) element.style.marginLeft = marginLeft;
+      const rect = element.getBoundingClientRect();
+      if (!rect.width || !rect.height || rect.left < bounds.left || rect.right > bounds.right || rect.top < bounds.top || rect.bottom > bounds.bottom) continue;
+      if (rect.left < topbar.right && rect.right > topbar.left && rect.top < topbar.bottom && rect.bottom > topbar.top) continue;
+      const overlaps = occupied.some((taken) =>
+        rect.left < taken.right + 3 && rect.right > taken.left - 3 && rect.top < taken.bottom + 3 && rect.bottom > taken.top - 3
+      );
+      if (overlaps) continue;
+      shown.add(element);
+      occupied.push(rect);
+      break;
+    }
+  }
+  labelItems.forEach(({ element }) => {
+    const opacity = shown.has(element) ? "1" : "0";
+    if (element.style.opacity !== opacity) element.style.opacity = opacity;
+  });
 }
 
 function addContext() {
@@ -893,7 +1013,7 @@ function addContext() {
   );
   lot.rotation.x = -Math.PI / 2;
   lot.position.set(0, -0.14, 0);
-  lot.receiveShadow = true;
+  lot.receiveShadow = false;
   scene.add(lot);
 
   const street = new THREE.Mesh(
@@ -922,6 +1042,9 @@ function showFloor(value) {
   activeFloor = value;
   const all = value === "all";
   const selected = Number(value);
+  document.querySelector(".viewer-note").textContent = all
+    ? "Selecione um pavimento para ver ambientes e pontos individuais. Rotas de cabos indicativas."
+    : "Rotas de cabos indicativas. Amplie a planta para ver os pontos individuais.";
 
   floorGroups.forEach((group, id) => {
     group.visible = all || id === selected;
@@ -931,11 +1054,11 @@ function showFloor(value) {
 
   if (all) {
     controls.target.set(0, FLOOR_HEIGHT * 1.4, 0);
-    camera.position.set(18, 18, 22);
+    camera.position.set(27, 24, 29);
   } else {
     const y = selected * FLOOR_HEIGHT;
     controls.target.set(0, y + 0.4, 0);
-    camera.position.set(16, y + 10, 17);
+    camera.position.set(23, y + 19, 25);
   }
 }
 
@@ -969,6 +1092,7 @@ function animate() {
   controls.update();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
+  refreshLabelVisibility();
   requestAnimationFrame(animate);
 }
 
