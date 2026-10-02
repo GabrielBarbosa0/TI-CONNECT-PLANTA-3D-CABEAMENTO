@@ -1,4 +1,4 @@
-# TI-CONNECT-PLANTA-3D-CABEAMENTO
+# TI Connect - Planta 3D de Cabeamento Estruturado
 
 Abra `index.html` por um servidor HTTP local para visualizar a planta 3D. Por exemplo: `python3 -m http.server 8765` e acesse `http://localhost:8765`.
 
