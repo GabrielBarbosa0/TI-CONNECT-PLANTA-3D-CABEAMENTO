@@ -17,3 +17,10 @@ export function routeCable(from, to, { via = [] } = {}) {
 
   return points;
 }
+
+// Translate the camera and its orbit target equally: no change to view direction.
+export function moveViewOnAxis(position, target, axis, nextTarget) {
+  const delta = nextTarget - target[axis];
+  position[axis] += delta;
+  target[axis] = nextTarget;
+}

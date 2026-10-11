@@ -450,3 +450,39 @@ h2 {
     max-width: none;
   }
 }
+
+
+.swatch.ups { background: #53666f; }
+.swatch.tray { background: #88999f; }
+.budget-inventory p { color: var(--muted); font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
+.budget-inventory details { margin: 12px 0; }
+.budget-inventory summary { cursor: pointer; font-size: 13px; font-weight: 700; }
+.budget-inventory ul { padding: 0; list-style: none; }
+.budget-inventory li { padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 1.4; }
+.budget-inventory li strong, .budget-inventory li span { display: block; }
+.budget-inventory li span { color: var(--muted); margin-top: 3px; }
+
+.device-label::before, .endpoint-label::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  height: 1px;
+  width: var(--leader-length, 0px);
+  background: #657a80;
+  transform-origin: left center;
+  transform: rotate(var(--leader-angle, 0rad));
+}
+
+.camera-axis-heading { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+.camera-axis-heading output { font-variant-numeric: tabular-nums; font-weight: 700; }
+.camera-axis-slider { display: block; width: 100%; margin: 12px 0; accent-color: var(--accent); cursor: pointer; }
+.camera-axis-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.camera-axis-actions button { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); cursor: pointer; }
+.camera-axis-actions button:hover { border-color: var(--accent); }
+.camera-axis-actions button:disabled { opacity: .45; cursor: default; }
+#camera-position-help { color: var(--muted); font-size: 12px; line-height: 1.4; margin-top: 8px; }
+.camera-axis-slider:focus-visible, .camera-axis-actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.camera-axis-control + .camera-axis-control { margin-top: 18px; }
