@@ -1,210 +1,13 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { CSS2DObject, CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
-import { routeCable } from "./model-helpers.mjs";
+import { floors, COLORS, backboneLinks } from "./model-data.mjs";
+import { budget } from "./budget-data.mjs";
+import { routeCable, moveViewOnAxis } from "./model-helpers.mjs?v=3";
 
 const FLOOR_HEIGHT = 3.4;
 const WALL_HEIGHT = 0.52;
 const BUILDING = { width: 22, depth: 9 };
-
-const COLORS = {
-  floor: 0xe7e2d6,
-  floorTop: 0xf5f0e5,
-  wall: 0xc9c3b7,
-  glass: 0x8ac3c0,
-  parking: 0x9da7ad,
-  stock: 0xb77b49,
-  server: 0x4761a6,
-  switch: 0x138f72,
-  firewall: 0xb8414b,
-  endpoint: 0xc97832,
-  ap: 0x7f579e,
-  guestAp: 0x18a8b8,
-  copper: 0xe07a2f,
-  guest: 0x18a8b8,
-  backbone: 0x2458d8,
-  bath: 0x77a6be,
-  leisure: 0x74a86f,
-  meeting: 0x8a70a8,
-  office: 0xd2a14a,
-  archive: 0xa79670,
-  stair: 0x96a2a8
-};
-
-const floors = [
-  {
-    id: 0,
-    name: "Térreo",
-    rooms: [
-      { name: "Estacionamento", x: -4.1, z: 0, w: 13.3, d: 8.5, color: COLORS.parking, walls: false },
-      { name: "Entrada veículos", x: 6.2, z: -3.2, w: 9.6, d: 2.1, color: COLORS.parking, walls: false },
-      { name: "Recepção", x: 8.75, z: 1.55, w: 4.4, d: 5.3, color: COLORS.glass },
-      { name: "Banheiro M T", x: 5.45, z: 0.225, w: 2.2, d: 2.65, color: COLORS.bath },
-      { name: "Banheiro F T", x: 5.45, z: 2.875, w: 2.2, d: 2.65, color: COLORS.bath },
-      { name: "Estoque", x: 2.15, z: 1.55, w: 4.4, d: 5.3, color: COLORS.stock },
-      { name: "Escada", x: -1.3, z: 3.05, w: 2.5, d: 2.4, color: COLORS.stair, stairs: true }
-    ],
-    doors: [
-      { name: "Porta recepção", orientation: "vertical", line: 10.95, start: 0.65, end: 1.85 },
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
-      { name: "Acesso banheiro M", orientation: "vertical", line: 6.55, start: -0.35, end: 0.85, marker: false },
-      { name: "Acesso banheiro F", orientation: "vertical", line: 6.55, start: 2.25, end: 3.45, marker: false },
-      { name: "Acesso estoque", orientation: "horizontal", line: -1.1, start: 1.45, end: 2.65, marker: false }
-    ],
-    devices: [
-      { type: "rack", name: "RACK-T", x: 3.55, z: 2.75 },
-      { type: "switch", name: "SW-T-01", x: 2.15, z: 2.2 },
-      { type: "switch", name: "SW-BB-T", x: 0.75, z: 0.35 },
-      { type: "firewall", name: "FW-01", x: 0.65, z: 2.75 },
-      { type: "ap", name: "AP-CORP-T", x: -3.6, z: -1.7 },
-      { type: "guestAp", name: "AP-VIS-01", x: 9.25, z: 1.0 },
-      { type: "endpoint", name: "CLI-01", x: 10.2, z: 1.9 },
-      { type: "endpoint", name: "PT-EST-01", x: 3.65, z: 0.0 }
-    ],
-    cables: [
-      { from: [0.65, 2.75], to: [2.15, 2.2], type: "copper" },
-      { from: [2.15, 2.2], to: [3.55, 2.75], type: "copper" },
-      { from: [2.15, 2.2], to: [0.75, 0.35], type: "copper" },
-      { from: [2.15, 2.2], to: [3.65, 0.0], type: "copper" },
-      { from: [2.15, 2.2], to: [-3.6, -1.7], type: "copper" },
-      { from: [0.65, 2.75], to: [9.25, 1.0], type: "guest" },
-      { from: [9.25, 1.0], to: [10.2, 1.9], type: "guest" },
-      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" }
-    ],
-    zones: [
-      {
-        name: "SSID Visitantes\nVLAN 30",
-        x: 9.25,
-        z: 1.0,
-        radius: 2.05,
-        color: COLORS.guest
-      }
-    ]
-  },
-  {
-    id: 1,
-    name: "1º andar",
-    rooms: [
-      { name: "Suporte Técnico N3", x: 0, z: -1.2, w: 21.5, d: 6.1, color: COLORS.office },
-      { name: "Sala Servidores", x: -6.65, z: 3.05, w: 8.2, d: 2.4, color: COLORS.server },
-      { name: "Escada", x: -1.3, z: 3.05, w: 2.5, d: 2.4, color: COLORS.stair, stairs: true },
-      { name: "Apoio Técnico N3", x: 1.35, z: 3.05, w: 2.8, d: 2.4, color: COLORS.office },
-      { name: "Banheiro M 1", x: 4.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath },
-      { name: "Banheiro F 1", x: 8.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath }
-    ],
-    doors: [
-      { name: "Porta servidores", orientation: "horizontal", line: 1.85, start: -4.35, end: -3.2, marker: false },
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
-      { name: "Acesso apoio N3", orientation: "horizontal", line: 1.85, start: 0.8, end: 1.9, marker: false },
-      { name: "Acesso banheiro M", orientation: "horizontal", line: 1.85, start: 4.1, end: 5.3, marker: false },
-      { name: "Acesso banheiro F", orientation: "horizontal", line: 1.85, start: 8.1, end: 9.3, marker: false }
-    ],
-    customWalls: [
-      { orientation: "vertical", line: -3.05, start: -4.25, end: 0.7 }
-    ],
-    devices: [
-      { type: "server", name: "SRV-01", x: -8.2, z: 2.4 },
-      { type: "server", name: "BKP-01", x: -6.3, z: 2.4 },
-      { type: "rack", name: "RACK-CPD", x: -4.7, z: 2.4 },
-      { type: "switch", name: "SW-N3-01", x: -3.9, z: 2.4 },
-      { type: "switch", name: "SW-BB-1", x: 0.75, z: 0.35 },
-      { type: "ap", name: "AP-1-01", x: 2.2, z: -2.6 },
-      ...namedDevices("N3", n3Points())
-    ],
-    cables: [
-      { from: [-3.9, 2.4], to: [-8.2, 2.4], type: "copper" },
-      { from: [-3.9, 2.4], to: [-6.3, 2.4], type: "copper" },
-      { from: [-3.9, 2.4], to: [2.2, -2.6], type: "copper" },
-      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" },
-      { from: [0.75, 0.35], to: [-3.9, 2.4], type: "copper" },
-      { from: [-3.9, 2.4], to: [0.8, -0.85], type: "copper" },
-      { from: [0.8, -0.85], to: [4.3, -0.85], type: "copper", bus: true },
-      ...dropCablesToBus(n3Points(), -0.85)
-    ]
-  },
-  {
-    id: 2,
-    name: "2º andar",
-    rooms: [
-      { name: "Telemarketing", x: 0, z: -1.2, w: 21.5, d: 6.1, color: COLORS.office },
-      { name: "Bancadas Telemarketing", x: -6.65, z: 3.05, w: 8.2, d: 2.4, color: COLORS.office },
-      { name: "Escada", x: -1.3, z: 3.05, w: 2.5, d: 2.4, color: COLORS.stair, stairs: true },
-      { name: "Banheiro M 2", x: 4.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath },
-      { name: "Banheiro F 2", x: 8.75, z: 3.05, w: 4.0, d: 2.4, color: COLORS.bath }
-    ],
-    doors: [
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
-      { name: "Porta bancadas", orientation: "horizontal", line: 1.85, start: -6.2, end: -5.0, marker: false },
-      { name: "Porta banheiro M", orientation: "horizontal", line: 1.85, start: 4.1, end: 5.3, marker: false },
-      { name: "Porta banheiro F", orientation: "horizontal", line: 1.85, start: 8.1, end: 9.3, marker: false }
-    ],
-    devices: [
-      { type: "rack", name: "RACK-2", x: -8.4, z: 2.8 },
-      { type: "switch", name: "SW-TMK-01", x: -7.6, z: 2.8 },
-      { type: "switch", name: "SW-BB-2", x: 0.75, z: 0.35 },
-      { type: "ap", name: "AP-2-01", x: 4.0, z: 0.8 },
-      ...gridDevices("TMK", 14, -5.4, -2.4, 1.85, 1.35)
-    ],
-    cables: [
-      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" },
-      { from: [0.75, 0.35], to: [-7.6, 2.8], type: "copper" },
-      { from: [-7.6, 2.8], to: [4.0, 0.8], type: "copper" },
-      { from: [-7.6, 2.8], to: [-5.6, -0.8], type: "copper" },
-      { from: [-5.6, -0.8], to: [6.2, -0.8], type: "copper", bus: true },
-      ...dropCablesToBus(gridPoints(14, -5.4, -2.4, 1.85, 1.35), -0.8)
-    ]
-  },
-  {
-    id: 3,
-    name: "3º andar",
-    rooms: [
-      { name: "Reunião", x: -8.1, z: -1.75, w: 5.3, d: 5.0, color: COLORS.meeting },
-      { name: "Setores", x: -1.4, z: -1.2, w: 8.1, d: 6.1, color: COLORS.office },
-      { name: "Sala Chefe", x: 8.25, z: -1.75, w: 4.9, d: 5.0, color: COLORS.meeting },
-      { name: "Descompressão", x: -8.125, z: 3.05, w: 5.25, d: 2.4, color: COLORS.leisure },
-      { name: "Copa", x: -4.0, z: 3.05, w: 2.8, d: 2.4, color: COLORS.stock },
-      { name: "Escada", x: -1.3, z: 3.05, w: 2.5, d: 2.4, color: COLORS.stair, stairs: true },
-      { name: "Arquivo RH", x: 1.975, z: 3.05, w: 4.05, d: 2.4, color: COLORS.archive },
-      { name: "Banheiro M 3", x: 5.7, z: 3.05, w: 3.4, d: 2.4, color: COLORS.bath },
-      { name: "Banheiro F 3", x: 9.05, z: 3.05, w: 3.3, d: 2.4, color: COLORS.bath }
-    ],
-    doors: [
-      { name: "Saída escada", orientation: "horizontal", line: 1.85, start: -2.1, end: -0.45, marker: false },
-      { name: "Porta reunião", orientation: "vertical", line: -5.45, start: -2.25, end: -1.05, marker: false },
-      { name: "Porta copa", orientation: "horizontal", line: 1.85, start: -4.65, end: -3.55, marker: false },
-      { name: "Porta descomp.", orientation: "horizontal", line: 1.85, start: -7.05, end: -5.85, marker: false },
-      { name: "Porta arquivo", orientation: "horizontal", line: 1.85, start: 2.05, end: 3.2, marker: false },
-      { name: "Porta banheiro M", orientation: "horizontal", line: 1.85, start: 5.05, end: 6.2, marker: false },
-      { name: "Porta banheiro F", orientation: "horizontal", line: 1.85, start: 8.1, end: 9.25, marker: false },
-      { name: "Porta chefe", orientation: "vertical", line: 5.8, start: -2.3, end: -1.1, marker: false }
-    ],
-    omitWalls: [
-      { orientation: "vertical", line: -5.45, start: 0.75, end: 1.85 },
-      { orientation: "vertical", line: 2.65, start: -4.25, end: 1.85 }
-    ],
-    devices: [
-      { type: "rack", name: "RACK-3", x: -9.0, z: -3.2 },
-      { type: "switch", name: "SW-3-01", x: -8.2, z: -3.2 },
-      { type: "switch", name: "SW-BB-3", x: 0.75, z: 0.35 },
-      { type: "ap", name: "AP-3-01", x: -5.9, z: 2.8 },
-      { type: "endpoint", name: "VG-01", x: -7.8, z: 2.55 },
-      { type: "endpoint", name: "REU-01", x: -8.2, z: -1.2 },
-      { type: "endpoint", name: "CHF-01", x: 8.1, z: -2.5 },
-      ...sectorDevices()
-    ],
-    cables: [
-      { from: [0.75, 0.35], to: [0.2, 0.0], type: "backbone" },
-      { from: [0.75, 0.35], to: [-8.2, -3.2], type: "copper" },
-      { from: [-8.2, -3.2], to: [-5.9, 2.8], type: "copper" },
-      { from: [-8.2, -3.2], to: [-7.8, 2.55], type: "copper" },
-      { from: [-8.2, -3.2], to: [-8.2, -1.2], type: "copper" },
-      { from: [-8.2, -3.2], to: [8.1, -2.5], type: "copper" },
-      { from: [-8.2, -3.2], to: [-3.9, -0.95], type: "copper" },
-      { from: [-3.9, -0.95], to: [1.8, -0.95], type: "copper", bus: true },
-      ...dropCablesToBus(sectorPoints(), -0.95)
-    ]
-  }
-];
 
 const container = document.querySelector("#scene");
 const scene = new THREE.Scene();
@@ -235,6 +38,21 @@ controls.maxPolarAngle = Math.PI * 0.48;
 controls.minDistance = 12;
 controls.maxDistance = 72;
 
+const cameraAxisOrigins = { x: 0, y: FLOOR_HEIGHT * 1.4, z: 0 };
+const cameraAxisControls = [...document.querySelectorAll("[data-camera-axis]")].map((group) => {
+  const axis = group.dataset.cameraAxis;
+  const input = group.querySelector("input");
+  const output = group.querySelector("output");
+  const decrease = group.querySelector('[data-camera-step="-1"]');
+  const increase = group.querySelector('[data-camera-step="1"]');
+  input.addEventListener("input", () => setCameraAxisPosition(axis, Number(input.value), input));
+  [decrease, increase].forEach((button) => button.addEventListener("click", () =>
+    setCameraAxisPosition(axis, controls.target[axis] - cameraAxisOrigins[axis] + Number(button.dataset.cameraStep), input)
+  ));
+  return { axis, input, output, decrease, increase };
+});
+controls.addEventListener("change", syncCameraAxisPositions);
+
 const floorGroups = new Map();
 const layerGroups = {
   cables: new THREE.Group(),
@@ -248,7 +66,9 @@ scene.add(layerGroups.cables, layerGroups.devices, layerGroups.labels);
 addLights();
 addContext();
 buildFloors();
+updateBudgetSummary();
 resize();
+syncCameraAxisPositions();
 animate();
 
 window.addEventListener("resize", resize);
@@ -478,6 +298,7 @@ function buildFloors() {
     addCustomWalls(baseGroup, floor.customWalls ?? [], y);
     floor.zones?.forEach((zone) => addZone(baseGroup, zone, y, floor.id));
     floor.devices.forEach((device) => addDevice(device, y, floor.id));
+    addCablePathways(floor, y);
     floor.cables.forEach((cable) => addCable(cable, y, floor.id));
 
     addFloorLabel(floor.name, y, floor.id);
@@ -809,7 +630,7 @@ function addDevice(device, y, floorId) {
   group.position.set(device.x, y, device.z);
   layerGroups.devices.add(group);
 
-  const accent = COLORS[device.type] || COLORS.endpoint;
+  const accent = device.type === "ups" ? 0x53666f : (COLORS[device.type] || COLORS.endpoint);
   const caseMat = new THREE.MeshStandardMaterial({ color: 0x25343c, metalness: 0.38, roughness: 0.48 });
   const faceMat = new THREE.MeshStandardMaterial({ color: accent, metalness: 0.18, roughness: 0.48 });
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x111c23, roughness: 0.55 });
@@ -822,24 +643,51 @@ function addDevice(device, y, floorId) {
   );
   plinth.position.y = 0.235;
   plinth.receiveShadow = true;
-  group.add(plinth);
+  if (!device.inRack) group.add(plinth);
 
   if (device.type === "rack") {
-    addDeviceBox(group, 0.68, 1.04, 0.58, 0, 0.78, 0, caseMat);
-    addDeviceBox(group, 0.54, 0.89, 0.025, 0, 0.78, 0.305, darkMat);
-    [-0.30, 0.30].forEach((x) => addDeviceBox(group, 0.035, 0.94, 0.04, x, 0.78, 0.32, metalMat));
-    [0.48, 0.70, 0.92, 1.14].forEach((height, index) => {
-      addDeviceBox(group, 0.48, 0.14, 0.035, 0, height, 0.33, index % 2 ? faceMat : caseMat);
-      addDeviceBox(group, 0.05, 0.035, 0.016, 0.18, height, 0.355, lightMat);
-    });
-  } else if (device.type === "switch" || device.type === "firewall") {
-    const width = device.type === "switch" ? 0.72 : 0.68;
-    addDeviceBox(group, width, 0.24, 0.50, 0, 0.42, 0, caseMat);
-    addDeviceBox(group, width - 0.07, 0.15, 0.025, 0, 0.43, 0.263, faceMat);
-    for (let index = 0; index < (device.type === "switch" ? 6 : 4); index += 1) {
-      addDeviceBox(group, 0.064, 0.045, 0.018, -0.22 + index * 0.085, 0.43, 0.282, darkMat);
+    const enclosure = caseMat.clone();
+    enclosure.transparent = true;
+    enclosure.opacity = 0.22;
+    enclosure.depthWrite = false;
+    const shell = addDeviceBox(group, 0.68, 1.04, 0.58, 0, 0.78, 0, enclosure);
+    const edges = new THREE.LineSegments(new THREE.EdgesGeometry(shell.geometry), new THREE.LineBasicMaterial({ color: 0x526770 }));
+    edges.position.copy(shell.position);
+    group.add(edges);
+    [-0.30, 0.30].forEach((x) => addDeviceBox(group, 0.025, 0.94, 0.035, x, 0.78, 0.28, metalMat));
+    // Patch panel, guide and optical termination above the two real switches.
+    addDeviceBox(group, 0.54, 0.105, 0.03, 0, 1.17, 0.30, caseMat);
+    for (let port = 0; port < 24; port += 1) {
+      addDeviceBox(group, 0.015, 0.03, 0.012, -0.245 + port * 0.0213, 1.17, 0.323, darkMat);
     }
-    addDeviceBox(group, 0.032, 0.032, 0.02, 0.27, 0.44, 0.285, lightMat);
+    addDeviceBox(group, 0.54, 0.065, 0.07, 0, 1.04, 0.29, darkMat);
+    addDeviceBox(group, 0.48, 0.095, 0.20, 0, 0.91, 0.12, metalMat);
+    addDeviceBox(group, 0.54, 0.025, 0.31, 0, 0.35, 0, metalMat); // Nilko shelf
+    addDeviceBox(group, 0.055, 0.65, 0.055, 0.23, 0.73, -0.20, darkMat); // PDU
+    for (let socket = 0; socket < 8; socket += 1) {
+      addDeviceBox(group, 0.027, 0.035, 0.012, 0.23, 0.46 + socket * 0.075, -0.163, metalMat);
+    }
+  } else if (device.type === "switch" || device.type === "firewall") {
+    const width = device.ports >= 24 ? 0.54 : device.ports >= 16 ? 0.48 : 0.43;
+    const height = device.height;
+    addDeviceBox(group, width, 0.10, 0.30, 0, height, 0, caseMat);
+    addDeviceBox(group, width - 0.025, 0.075, 0.02, 0, height, 0.16, faceMat);
+    for (let port = 0; port < device.ports; port += 1) {
+      const columns = device.ports > 8 ? device.ports / 2 : device.ports;
+      const spacing = (width - 0.08) / columns;
+      addDeviceBox(group, spacing * 0.64, 0.021, 0.014,
+        -width / 2 + 0.04 + spacing * (port % columns + 0.5),
+        height + (device.ports > 8 ? (port < columns ? 0.02 : -0.02) : 0), 0.18, darkMat);
+    }
+    for (let sfp = 0; sfp < (device.sfpPorts || 0); sfp += 1) {
+      addDeviceBox(group, 0.045, 0.025, 0.055, -0.08 + sfp * 0.09, height + 0.025, -0.165,
+        sfp < device.sfpUsed ? metalMat : darkMat);
+    }
+  } else if (device.type === "ups") {
+    addDeviceBox(group, 0.38, 0.52, 0.48, 0, 0.51, 0, caseMat);
+    addDeviceBox(group, 0.30, 0.44, 0.02, 0, 0.51, 0.25, faceMat);
+    addDeviceBox(group, 0.16, 0.10, 0.015, 0, 0.62, 0.27, darkMat);
+    addDeviceBox(group, 0.027, 0.027, 0.015, 0, 0.43, 0.27, lightMat);
   } else if (device.type === "server") {
     addDeviceBox(group, 0.56, 0.92, 0.54, 0, 0.70, 0, caseMat);
     addDeviceBox(group, 0.48, 0.82, 0.026, 0, 0.70, 0.286, faceMat);
@@ -858,18 +706,11 @@ function addDevice(device, y, floorId) {
     const led = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), lightMat);
     led.position.set(0, 1.025, 0);
     group.add(led);
-  } else if (device.name.startsWith("PT-")) {
-    addDeviceBox(group, 0.32, 0.28, 0.10, 0, 0.42, 0, faceMat);
-    addDeviceBox(group, 0.11, 0.07, 0.015, 0, 0.43, 0.061, darkMat);
-  } else if (device.name.startsWith("CLI-")) {
-    addDeviceBox(group, 0.39, 0.035, 0.28, 0, 0.35, 0, caseMat);
-    addDeviceBox(group, 0.39, 0.27, 0.035, 0, 0.50, -0.11, faceMat);
-    addDeviceBox(group, 0.33, 0.20, 0.014, 0, 0.50, -0.088, darkMat);
-  } else {
-    addDeviceBox(group, 0.25, 0.12, 0.27, 0, 0.34, 0, caseMat);
-    addDeviceBox(group, 0.035, 0.18, 0.035, 0, 0.51, 0, metalMat);
-    addDeviceBox(group, 0.44, 0.30, 0.055, 0, 0.64, 0, caseMat);
-    addDeviceBox(group, 0.37, 0.23, 0.015, 0, 0.64, 0.036, faceMat);
+  } else if (device.type === "endpoint") {
+    // Budget scope: outlet and one populated Cat6 keystone, no purchased computer.
+    addDeviceBox(group, 0.32, 0.28, 0.10, 0, 0.42, 0, metalMat);
+    addDeviceBox(group, 0.10, 0.075, 0.018, -0.055, 0.43, 0.063, darkMat);
+    addDeviceBox(group, 0.075, 0.06, 0.014, 0.065, 0.43, 0.061, faceMat);
   }
 
   const labelClass = isInfrastructure ? "device-label" : "endpoint-label";
@@ -877,7 +718,12 @@ function addDevice(device, y, floorId) {
     : device.type === "switch" && !device.name.includes("BB") ? 1.35
     : device.name.startsWith("BKP") ? 1.28
     : device.type === "ap" || device.type === "guestAp" ? 1.28 : 1.02;
-  addLabel(device.name, device.x, y + labelHeight, device.z, labelClass, floorId);
+  const shortModel = device.type === "endpoint" ? "RJ45 Cat6"
+    : device.model.replace("TP-Link ", "").replace("Intelbras ", "").split(" / ")[0];
+  const label = addLabel(`${device.name}\n${shortModel}`, device.x, y + labelHeight, device.z, labelClass, floorId);
+  label.element.title = `${device.name}: ${device.model}${device.ports ? ` · ${device.ports} portas RJ45` : ""}`;
+  label.element.dataset.deviceType = device.type;
+  label.element.dataset.deviceName = device.name;
 }
 
 function addDeviceBox(group, width, height, depth, x, y, z, material) {
@@ -886,6 +732,29 @@ function addDeviceBox(group, width, height, depth, x, y, z, material) {
   mesh.castShadow = true;
   group.add(mesh);
   return mesh;
+}
+
+function addCablePathways(floor, y) {
+  const group = new THREE.Group();
+  group.userData.floor = floor.id;
+  const unique = new Set();
+  const material = new THREE.MeshStandardMaterial({ color: 0x88999f, transparent: true, opacity: 0.36, depthWrite: false });
+  floor.cables.filter((cable) => cable.via?.length).forEach((cable) => {
+    const path = routeCable(cable.from, cable.to, { via: cable.via });
+    for (let index = 1; index < path.length; index += 1) {
+      const [x1, z1] = path[index - 1];
+      const [x2, z2] = path[index];
+      const key = [path[index - 1].join(','), path[index].join(',')].sort().join('|');
+      if (unique.has(key)) continue;
+      unique.add(key);
+      const length = Math.hypot(x2 - x1, z2 - z1);
+      if (!length) continue;
+      const horizontal = z1 === z2;
+      addDeviceBox(group, horizontal ? length : 0.13, 0.075, horizontal ? 0.13 : length,
+        (x1 + x2) / 2, y + 0.26, (z1 + z2) / 2, material);
+    }
+  });
+  layerGroups.cables.add(group);
 }
 
 function addCable(cable, y, floorId) {
@@ -901,10 +770,13 @@ function addCable(cable, y, floorId) {
   const radius = cable.bus ? 0.055 : cable.type === "backbone" ? 0.048 : 0.028;
   const material = new THREE.MeshStandardMaterial({ color, metalness: 0.12, roughness: 0.43 });
   const points = path.map(([x, z]) => new THREE.Vector3(x, y + 0.30, z));
+  points.unshift(new THREE.Vector3(cable.from[0], y + (cable.fromHeight ?? 0.43), cable.from[1]));
+  points.push(new THREE.Vector3(cable.to[0], y + (cable.toHeight ?? 0.43), cable.to[1]));
   for (let index = 1; index < points.length; index += 1) {
     const start = points[index - 1];
     const end = points[index];
     const direction = new THREE.Vector3().subVectors(end, start);
+    if (direction.length() < 0.0001) continue;
     const segment = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, direction.length(), 8), material);
     segment.position.copy(start).add(end).multiplyScalar(0.5);
     segment.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
@@ -919,11 +791,22 @@ function addCable(cable, y, floorId) {
 }
 
 function addBackboneShaft() {
+  // Each adjacent pair gets a separate optical link; the sleeve is the conduit.
+  backboneLinks.forEach((link, index) => {
+    const group = new THREE.Group();
+    group.userData.floor = -1;
+    const length = FLOOR_HEIGHT;
+    const segment = new THREE.Mesh(new THREE.CylinderGeometry(0.027, 0.027, length, 8),
+      new THREE.MeshStandardMaterial({color: COLORS.backbone}));
+    segment.position.set(0.2 + index * 0.055, link.fromFloor * FLOOR_HEIGHT + length / 2 + 0.30, 0);
+    group.add(segment);
+    layerGroups.cables.add(group);
+  });
   const group = new THREE.Group();
   group.userData.floor = -1;
   const shaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.085, 0.085, FLOOR_HEIGHT * 3 + 0.8, 16),
-    new THREE.MeshStandardMaterial({ color: COLORS.backbone, metalness: 0.28, roughness: 0.4 })
+    new THREE.CylinderGeometry(0.15, 0.15, FLOOR_HEIGHT * 3 + 0.8, 16),
+    new THREE.MeshStandardMaterial({ color: 0x88999f, transparent: true, opacity: 0.16, depthWrite: false })
   );
   shaft.position.set(0.2, FLOOR_HEIGHT * 1.5 + 0.3, 0);
   group.add(shaft);
@@ -939,7 +822,7 @@ function addBackboneShaft() {
   sleeve.position.copy(shaft.position);
   group.add(sleeve);
   layerGroups.cables.add(group);
-  addLabel("SHAFT / BACKBONE", 0.2, FLOOR_HEIGHT * 3 + 1.45, 0, "shaft-label", -1);
+  addLabel("SHAFT / BACKBONE\n3 enlaces ópticos", 0.2, FLOOR_HEIGHT * 3 + 1.45, 0, "shaft-label", -1);
 }
 
 function addFloorLabel(text, y, floorId) {
@@ -981,8 +864,8 @@ function refreshLabelVisibility(override = null) {
   const shown = new Set();
   for (const { element, kind } of candidates) {
     const offsets = kind === "device-label"
-      ? [[0, 0], [0, -30], [30, 0], [-30, 0], [30, -30], [-30, -30], [0, -60], [60, -30], [-60, -30], [30, -60], [-30, -60], [60, -60], [-60, -60], [0, -90]]
-      : kind === "endpoint-label" ? [[0, 0], [0, -22], [20, 0], [-20, 0]] : [[0, 0]];
+      ? [[0, 0], [0, -30], [30, 0], [-30, 0], [30, -30], [-30, -30], [0, -60], [60, -30], [-60, -30], [30, -60], [-30, -60], [60, -60], [-60, -60], [0, -90], [90, 0], [-90, 0], [90, -60], [-90, -60], [0, -120], [60, -120], [-60, -120], [120, -30], [-120, -30], [0, -150], [90, -120], [-90, -120], [0, -180], [60, -180], [-60, -180], [150, -60], [-150, -60], [150, -120], [-150, -120], [0, 60], [90, 60], [-90, 60], [150, 0], [-150, 0], [0, 90], [90, 90], [-90, 90], [150, 60], [-150, 60]]
+      : kind === "endpoint-label" ? [[0, 0], [0, -24], [24, 0], [-24, 0], [24, -24], [-24, -24], [0, -48], [48, 0], [-48, 0], [48, -48], [-48, -48], [0, -72], [72, -24], [-72, -24], [0, -96], [48, -96], [-48, -96], [96, -48], [-96, -48], [0, -120], [72, -96], [-72, -96], [120, -24], [-120, -24], [96, -96], [-96, -96], [0, 48], [72, 48], [-72, 48], [0, 24], [48, 24], [-48, 24]] : [[0, 0]];
     for (const [dx, dy] of offsets) {
       const marginTop = `${dy}px`;
       const marginLeft = `${dx}px`;
@@ -995,6 +878,10 @@ function refreshLabelVisibility(override = null) {
         rect.left < taken.right + 3 && rect.right > taken.left - 3 && rect.top < taken.bottom + 3 && rect.bottom > taken.top - 3
       );
       if (overlaps) continue;
+      if (["device-label", "endpoint-label"].includes(kind)) {
+        element.style.setProperty("--leader-length", `${Math.hypot(dx, dy)}px`);
+        element.style.setProperty("--leader-angle", `${Math.atan2(-dy, -dx)}rad`);
+      }
       shown.add(element);
       occupied.push(rect);
       break;
@@ -1040,6 +927,7 @@ function addLights() {
 
 function showFloor(value) {
   activeFloor = value;
+  updateBudgetSummary();
   const all = value === "all";
   const selected = Number(value);
   document.querySelector(".viewer-note").textContent = all
@@ -1058,8 +946,11 @@ function showFloor(value) {
   } else {
     const y = selected * FLOOR_HEIGHT;
     controls.target.set(0, y + 0.4, 0);
-    camera.position.set(23, y + 19, 25);
+    camera.position.set(17, y + 15, 18);
   }
+  cameraAxisOrigins.y = all ? FLOOR_HEIGHT * 1.4 : selected * FLOOR_HEIGHT + 0.4;
+  controls.update();
+  syncCameraAxisPositions();
 }
 
 function syncLayerVisibility() {
@@ -1096,77 +987,53 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
-function gridDevices(prefix, count, startX, startZ, stepX, stepZ) {
-  return gridPoints(count, startX, startZ, stepX, stepZ).map((point, index) => ({
-    type: "endpoint",
-    name: `${prefix}-${String(index + 1).padStart(2, "0")}`,
-    x: point[0],
-    z: point[1]
-  }));
-}
 
-function namedDevices(prefix, points) {
-  return points.map((point, index) => ({
-    type: "endpoint",
-    name: `${prefix}-${String(index + 1).padStart(2, "0")}`,
-    x: point[0],
-    z: point[1]
-  }));
-}
 
-function gridPoints(count, startX, startZ, stepX, stepZ) {
-  return Array.from({ length: count }, (_, index) => {
-    const col = index % 7;
-    const row = Math.floor(index / 7);
-    return [startX + col * stepX, startZ + row * stepZ];
+function updateBudgetSummary() {
+  const selected = activeFloor === "all" ? floors : floors.filter((floor) => floor.id === Number(activeFloor));
+  const devices = selected.flatMap((floor) => floor.devices);
+  document.querySelector("#budget-points").textContent = devices.filter((device) => device.type === "endpoint").length;
+  document.querySelector("#budget-aps").textContent = devices.filter((device) => ["ap", "guestAp"].includes(device.type)).length;
+  document.querySelector("#budget-title").textContent = `Materiais — ${activeFloor === "all" ? "todos" : selected[0].name}`;
+  const total = selected.reduce((sum, floor) => sum + floor.budget.total, 0);
+  document.querySelector("#budget-total").textContent = total.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const equipment = document.querySelector("#budget-equipment");
+  const mounting = document.querySelector("#budget-mounting");
+  equipment.replaceChildren();
+  mounting.replaceChildren();
+  budget.items.forEach((item) => {
+    const quantity = activeFloor === "all" ? item.quantity : selected[0].budget.items.find((entry) => entry.id === item.id)?.quantity ?? 0;
+    if (!quantity) return;
+    const unit = activeFloor === "all" ? item.unit : selected[0].budget.items.find((entry) => entry.id === item.id).unit;
+    const row = document.createElement("li");
+    const title = document.createElement("strong");
+    title.textContent = `${quantity.toLocaleString("pt-BR")} ${unit} · ${item.model}`;
+    const description = document.createElement("span");
+    description.textContent = item.name;
+    row.append(title, description);
+    (item.group === "Equipamentos" ? equipment : mounting).append(row);
   });
 }
 
-function n3Points() {
-  return [
-    [1.2, -0.35],
-    [2.55, -0.35],
-    [3.9, -0.35],
-    [1.2, -1.35],
-    [2.55, -1.35],
-    [3.9, -1.35]
-  ];
+
+function setCameraAxisPosition(axis, offset, input) {
+  const nextOffset = THREE.MathUtils.clamp(offset, Number(input.min), Number(input.max));
+  moveViewOnAxis(camera.position, controls.target, axis, cameraAxisOrigins[axis] + nextOffset);
+  controls.update();
+  syncCameraAxisPositions();
 }
 
-function busCables(busStart, points) {
-  return points.map((point) => ({
-    from: busStart,
-    to: point,
-    type: "copper"
-  }));
-}
-
-function dropCablesToBus(points, busZ) {
-  return points.map((point) => ({
-    from: [point[0], busZ],
-    to: point,
-    type: "copper"
-  }));
-}
-
-function sectorPoints() {
-  return [
-    [-3.55, -1.55],
-    [-2.25, -1.55],
-    [-0.95, -1.55],
-    [0.35, -1.55],
-    [1.55, -1.55],
-    [-2.25, -2.55],
-    [-0.95, -2.55]
-  ];
-}
-
-function sectorDevices() {
-  const names = ["N2-01", "N2-02", "INF-01", "INF-02", "FIN-01", "RH-01", "ADM-01"];
-  return sectorPoints().map(([x, z], index) => ({
-    type: "endpoint",
-    name: names[index],
-    x,
-    z
-  }));
+function syncCameraAxisPositions() {
+  // Values are offsets from the selected floor's default focus, including mouse panning.
+  cameraAxisControls.forEach(({ axis, input, output, decrease, increase }) => {
+    const offset = controls.target[axis] - cameraAxisOrigins[axis];
+    input.min = String(Math.min(-20, Math.floor(offset)));
+    input.max = String(Math.max(20, Math.ceil(offset)));
+    const displayOffset = Math.abs(offset) < 0.05 ? 0 : offset;
+    input.value = displayOffset.toFixed(1);
+    output.value = displayOffset.toLocaleString("pt-BR", {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    input.setAttribute("aria-valuetext", `Deslocamento no eixo ${axis.toUpperCase()}: ${output.value}`);
+    decrease.disabled = offset <= Number(input.min) + 0.05;
+    increase.disabled = offset >= Number(input.max) - 0.05;
+  });
 }

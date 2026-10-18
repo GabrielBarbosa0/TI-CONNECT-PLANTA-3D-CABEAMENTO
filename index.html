@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TI Connect - Planta 3D de Cabeamento</title>
-    <link rel="stylesheet" href="./styles.css?v=7" />
+    <link rel="stylesheet" href="./styles.css?v=11" />
     <script type="importmap">
       {
         "imports": {
@@ -34,6 +34,44 @@
             <button class="floor-button" type="button" data-floor="2" aria-pressed="false">2º</button>
             <button class="floor-button" type="button" data-floor="3" aria-pressed="false">3º</button>
           </div>
+        </section>
+
+        <section class="control-block">
+          <h2>Câmera</h2>
+          <div class="camera-axis-control" data-camera-axis="x">
+            <div class="camera-axis-heading">
+              <label for="camera-position-x">Eixo X — lateral</label>
+              <output id="camera-position-x-value" for="camera-position-x">0,0</output>
+            </div>
+            <input id="camera-position-x" class="camera-axis-slider" type="range" min="-20" max="20" step="0.1" value="0" aria-describedby="camera-position-help" />
+            <div class="camera-axis-actions">
+              <button type="button" data-camera-step="-1" aria-label="Mover câmera no sentido negativo do eixo X">− X</button>
+              <button type="button" data-camera-step="1" aria-label="Mover câmera no sentido positivo do eixo X">+ X</button>
+            </div>
+          </div>
+          <div class="camera-axis-control" data-camera-axis="y">
+            <div class="camera-axis-heading">
+              <label for="camera-position-y">Eixo Y — vertical</label>
+              <output id="camera-position-y-value" for="camera-position-y">0,0</output>
+            </div>
+            <input id="camera-position-y" class="camera-axis-slider" type="range" min="-20" max="20" step="0.1" value="0" aria-describedby="camera-position-help" />
+            <div class="camera-axis-actions">
+              <button type="button" data-camera-step="-1" aria-label="Mover câmera no sentido negativo do eixo Y">− Y</button>
+              <button type="button" data-camera-step="1" aria-label="Mover câmera no sentido positivo do eixo Y">+ Y</button>
+            </div>
+          </div>
+          <div class="camera-axis-control" data-camera-axis="z">
+            <div class="camera-axis-heading">
+              <label for="camera-position-z">Eixo Z — profundidade</label>
+              <output id="camera-position-z-value" for="camera-position-z">0,0</output>
+            </div>
+            <input id="camera-position-z" class="camera-axis-slider" type="range" min="-20" max="20" step="0.1" value="0" aria-describedby="camera-position-help" />
+            <div class="camera-axis-actions">
+              <button type="button" data-camera-step="-1" aria-label="Mover câmera no sentido negativo do eixo Z">− Z</button>
+              <button type="button" data-camera-step="1" aria-label="Mover câmera no sentido positivo do eixo Z">+ Z</button>
+            </div>
+          </div>
+          <p id="camera-position-help">Desloca a câmera e o foco juntos, mantendo o ângulo e o zoom.</p>
         </section>
 
         <section class="control-block">
@@ -76,13 +114,11 @@
               <dd>4</dd>
             </div>
             <div>
-              <dt>Área-base</dt>
-              <dd>retangular</dd>
+              <dt>Terminais RJ45</dt>
+              <dd id="budget-points">31</dd>
             </div>
-            <div>
-              <dt>Backbone</dt>
-              <dd>shaft vertical</dd>
-            </div>
+            <div><dt>APs Wi-Fi</dt><dd id="budget-aps">5</dd></div>
+            <div><dt id="budget-title">Materiais — todos</dt><dd id="budget-total"></dd></div>
           </dl>
         </section>
 
@@ -92,26 +128,37 @@
             <li><span class="swatch server"></span>Servidor / backup</li>
             <li><span class="swatch rack"></span>Rack</li>
             <li><span class="swatch switch"></span>Switch</li>
-            <li><span class="swatch firewall"></span>Firewall / roteador</li>
-            <li><span class="swatch endpoint"></span>Computador / ponto</li>
+            <li><span class="swatch firewall"></span>Gateway / roteador</li>
+            <li><span class="swatch endpoint"></span>Tomada RJ45 Cat6 (terminal)</li>
+            <li><span class="swatch ups"></span>Nobreak</li>
+            <li><span class="swatch tray"></span>Canaleta (trajeto estimado)</li>
             <li><span class="swatch ap"></span>Ponto de acesso</li>
             <li><span class="line copper"></span>Cabo UTP (trajeto esquemático)</li>
-            <li><span class="line guest"></span>Rede visitantes</li>
+            <li><span class="line guest"></span>Cabo do AP de visitantes</li>
             <li><span class="line backbone"></span>Backbone</li>
           </ul>
         </section>
 
+        <section class="control-block budget-inventory">
+          <h2>Orçamento da planta</h2>
+          <p>Computadores não incluídos. Visitantes usam Wi-Fi.</p>
+          <details><summary>Modelos e quantidades</summary><ul id="budget-equipment"></ul></details>
+          <details><summary>Montagem e terminações</summary><ul id="budget-mounting"></ul></details>
+          <p>Canaletas e eletrodutos: quantidades estimadas; rotas e dimensões dos símbolos são esquemáticas. Fixadores, velcro e etiquetas estão contabilizados, sem representação individual.</p>
+        </section>
         <section class="control-block glossary">
           <h2>Siglas da planta</h2>
           <dl>
             <div><dt>RACK</dt><dd>Armário de equipamentos de rede</dd></div>
             <div><dt>SW</dt><dd>Switch de rede</dd></div>
             <div><dt>BB</dt><dd>Backbone / distribuição entre andares</dd></div>
-            <div><dt>FW</dt><dd>Firewall e roteador principal</dd></div>
+            <div><dt>FW</dt><dd>Gateway ER605 V2: roteamento e controle de acesso</dd></div>
             <div><dt>AP</dt><dd>Ponto de acesso Wi-Fi</dd></div>
             <div><dt>SRV</dt><dd>Servidor principal</dd></div>
             <div><dt>BKP</dt><dd>Servidor de backup</dd></div>
-            <div><dt>CLI / PT</dt><dd>Cliente visitante / ponto de rede</dd></div>
+            <div><dt>PT</dt><dd>Ponto de rede cabeado (tomada RJ45)</dd></div>
+            <div><dt>UPS</dt><dd>Nobreak de proteção elétrica</dd></div>
+            <div><dt>PDU / DIO</dt><dd>Distribuição elétrica / terminação óptica no rack</dd></div>
             <div><dt>CPD</dt><dd>Centro de processamento de dados</dd></div>
           </dl>
           <details>
@@ -136,6 +183,6 @@
       </section>
     </main>
 
-    <script type="module" src="./app.js?v=5"></script>
+    <script type="module" src="./app.js?v=11"></script>
   </body>
 </html>
